@@ -78,8 +78,9 @@ export default function Sidebar({ onPanel, onLogout }) {
   return (
     <aside className="sidebar">
       <header className="sidebar-header">
-        <button type="button" className="me-btn" onClick={() => onPanel('profile')} title="Profile" aria-label="Your profile">
+        <button type="button" className="me-btn" onClick={() => onPanel('profile')} title={me?.username || 'Profile'} aria-label="Your profile">
           <Avatar id={me?.id} name={me?.username} color={me?.avatar_color} url={me?.avatar_url} size={40} />
+          <span className="me-name">{me?.username || 'Flick user'}</span>
         </button>
         <div className="sidebar-actions">
           <IconButton icon="status" label="Status" onClick={() => onPanel('status')} />

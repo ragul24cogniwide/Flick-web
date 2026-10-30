@@ -529,7 +529,7 @@ export async function reactToMessage(chatId, id, emoji) {
   if (res.ok) setReactions(res.data.reactions || []);
   else {
     setReactions(before);
-    toast(res.error, 'error');
+    toast(res.status === 404 ? 'Couldn’t react to this message. Refresh and try again.' : res.error, 'error');
   }
 }
 
@@ -786,9 +786,16 @@ function handleFrame({ type, data }) {
           list.map((m) => (m.id === String(data.message_id) ? { ...m, reactions: data.reactions || [] } : m)),
         );
       }
-      // Someone reacted to my message while I'm not looking at that chat
+      // Someone reacted to my message: chat list line + (if I'm not looking) a notification
       if (data?.emoji && sameUser(data.sender_id, state.me?.id) && !sameUser(data.user_id, state.me?.id)) {
         const chatId = data.group_id || chatIdFor(data.user_id);
+        const about = data.message_preview ? `: “${data.message_preview}”` : ' your message';
+        if (chatId) {
+          patchChat(chatId, {
+            last_message: data.group_id ? `${data.name} reacted ${data.emoji} to${about}` : `Reacted ${data.emoji} to${about}`,
+            time: new Date().toISOString(),
+          });
+        }
         const chat = chatId && state.chats[chatId];
         if (chat && state.prefs.msg_notifications !== false && !(chatId === state.activeId && isActiveVisible())) {
           notifyReaction(chat, data, hit?.m);

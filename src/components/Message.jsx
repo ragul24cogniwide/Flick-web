@@ -194,7 +194,7 @@ function ReactionChips({ reactions, myId, nameOf, onReact }) {
 
 /* ---------------- one message ---------------- */
 
-function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, onRetry, onOpenImage, onJump, onReact, nameOf, highlighted }) {
+function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, onRetry, onOpenImage, onJump, onReact, nameOf, reactionsOn = true, highlighted }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reacting, setReacting] = useState(false);
   const btnRef = useRef(null);
@@ -217,7 +217,7 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
   const canEdit = msg.mine && showText && msg.status !== 'pending' && msg.status !== 'failed';
 
   const copy = () => navigator.clipboard?.writeText(caption || msg.text).catch(() => {});
-  const canReact = msg.status !== 'pending' && msg.status !== 'failed';
+  const canReact = reactionsOn && msg.status !== 'pending' && msg.status !== 'failed';
   const reactions = msg.reactions || [];
   const myReaction = reactions.find((r) => sameUser(r.user_id, myId))?.emoji;
   const react = (emoji) => onReact(msg, emoji);

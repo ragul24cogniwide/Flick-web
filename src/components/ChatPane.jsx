@@ -259,6 +259,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
                 onJump={jumpTo}
                 onReact={onReact}
                 nameOf={nameOf}
+                reactionsOn={!chat.isAgent}
               />
             ),
           )}
