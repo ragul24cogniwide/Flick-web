@@ -163,3 +163,23 @@ export function applyTheme(theme) {
   if (theme === 'light' || theme === 'dark') root.setAttribute('data-theme', theme);
   else root.removeAttribute('data-theme');
 }
+
+/* ---------------- call log: when this browser last looked (for the missed-calls badge) ---------------- */
+
+const CALLS_SEEN_KEY = 'flick.web.callsSeenAt';
+
+export function callsSeenAt() {
+  try {
+    return Number(window.localStorage.getItem(CALLS_SEEN_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function markCallsSeen() {
+  try {
+    window.localStorage.setItem(CALLS_SEEN_KEY, String(Date.now()));
+  } catch {
+    /* private mode */
+  }
+}

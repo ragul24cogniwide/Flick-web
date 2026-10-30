@@ -134,7 +134,20 @@ function cleanup() {
 
 /** Shows the end state for a moment, then closes the call screen. */
 function finish(label) {
-  if (!call() || ending) return;
+  const c = call();
+  if (!c || ending) return;
+  // A call I never picked up just stops ringing: no full-screen "call ended" page over the chats
+  if (c.phase === 'incoming') {
+    cleanup();
+    setState({ call: null });
+    const kind = c.video ? 'video' : 'voice';
+    const note = {
+      'Missed call': `Missed ${kind} call from ${c.name}`,
+      'Answered on another device': `${c.name}’s ${kind} call was answered on another device`,
+    }[label]; // declining it yourself needs no note
+    if (note) toast(note);
+    return;
+  }
   ending = true;
   cleanup();
   setCall({ phase: 'ended', label, localStream: null, remoteStream: null });

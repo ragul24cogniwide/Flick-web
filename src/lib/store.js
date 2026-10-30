@@ -25,6 +25,7 @@ const initial = {
   dialog: null,
   toasts: [],
   statusVersion: 0, // bumps when someone posts a status
+  calls: null, // server call log (see loadCalls)
 };
 
 let state = initial;
@@ -245,6 +246,7 @@ export async function startApp(user) {
   const me = await api.getMe();
   if (me.ok) setState({ me: { ...user, ...me.data }, prefs: me.data.prefs || {} });
   await sync(true);
+  loadCalls();
 }
 
 export function stopApp() {
@@ -607,6 +609,22 @@ export async function setArchived(ids, archived, { undo = true } = {}) {
 }
 
 /* ------------------------------------------------------------------ */
+/* call log (kept on the server, same on the phone)                     */
+/* ------------------------------------------------------------------ */
+
+let callsTimer = null;
+export async function loadCalls() {
+  const res = await api.listCalls();
+  if (res.ok) setState({ calls: res.data.calls || [] });
+  else if (state.calls === null) setState({ calls: [] });
+}
+// Several call steps arrive close together: reload once
+const reloadCallsSoon = () => {
+  clearTimeout(callsTimer);
+  callsTimer = setTimeout(loadCalls, 400);
+};
+
+/* ------------------------------------------------------------------ */
 /* typing                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -908,6 +926,10 @@ function handleFrame({ type, data }) {
       });
       return;
     }
+
+    case 'call_log_updated':
+      reloadCallsSoon();
+      return;
 
     case 'status_update':
       setState((s) => ({ statusVersion: s.statusVersion + 1 }));

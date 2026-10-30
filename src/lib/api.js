@@ -110,6 +110,9 @@ export const viewStatus = (id) => request(`/api/statuses/${enc(id)}/view`, { met
 export const deleteStatus = (id) => request(`/api/statuses/${enc(id)}`, { method: 'DELETE' });
 
 /* ---- calls ---- */
+export const listCalls = () => request('/api/calls?limit=150');
+export const clearCalls = () => request('/api/calls', { method: 'DELETE' });
+export const removeCall = (id) => request(`/api/calls/${enc(id)}`, { method: 'DELETE' });
 export const callOffer = (payload) => request('/api/call/offer', { method: 'POST', body: payload });
 export const callAnswer = (payload) => request('/api/call/answer', { method: 'POST', body: payload });
 export const callReject = (payload, keepalive = false) =>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import ChatPane, { EmptyPane } from './components/ChatPane';
 import CallScreen from './components/CallScreen';
 import LinkScreen from './components/LinkScreen';
+import NavRail from './components/NavRail';
 import Sidebar from './components/Sidebar';
 import { DialogHost, Toasts } from './components/ui';
 import * as api from './lib/api';
@@ -10,6 +11,7 @@ import { applyTheme, useUi } from './lib/notify';
 import { clearSession, getSession, loadSession, onSessionChange } from './lib/session';
 import { socket } from './lib/socket';
 import { confirmDialog, openChat, startApp, stopApp, useStore } from './lib/store';
+import CallsPanel from './panels/Calls';
 import InfoPanel from './panels/InfoPanel';
 import { NewChatPanel, NewGroupPanel } from './panels/NewChat';
 import { ProfilePanel, SettingsPanel } from './panels/Settings';
@@ -22,8 +24,17 @@ function Workspace() {
   const activeId = useStore((s) => s.activeId);
   const chat = useStore((s) => (s.activeId ? s.chats[s.activeId] : null));
   const me = useStore((s) => s.me);
-  const [panel, setPanel] = useState(null);
+  const [section, setSection] = useState('chats'); // left column: chats | status | calls | settings
+  const [panel, setPanel] = useState(null); // slides over it: profile | newChat | newGroup
   const [infoOpen, setInfoOpen] = useState(false);
+
+  // Status, Calls and Settings are sections (switched from the left bar); the rest slide over
+  const open = useCallback((name) => {
+    if (['chats', 'status', 'calls', 'settings'].includes(name)) {
+      setSection(name);
+      setPanel(null);
+    } else setPanel(name);
+  }, []);
 
   useEffect(() => {
     const onOpen = (e) => openChat(e.detail);
@@ -36,12 +47,13 @@ function Workspace() {
     const onKey = (e) => {
       if (e.key !== 'Escape' || document.querySelector('.modal-backdrop, .lightbox, .story, .menu, .emoji-picker, .call-screen')) return;
       if (panel) setPanel(null);
+      else if (section !== 'chats') setSection('chats');
       else if (infoOpen) setInfoOpen(false);
       else if (activeId) openChat(null); // Close chat, like WhatsApp Web
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [panel, infoOpen, activeId]);
+  }, [panel, section, infoOpen, activeId]);
 
   const logout = useCallback(() => {
     confirmDialog({
@@ -64,19 +76,27 @@ function Workspace() {
   if (!me) return null;
 
   const close = () => setPanel(null);
+  const toChats = () => setSection('chats');
   const panels = {
     profile: <ProfilePanel onClose={close} />,
-    settings: <SettingsPanel onClose={close} onLogout={logout} />,
     newChat: <NewChatPanel onClose={close} onNewGroup={() => setPanel('newGroup')} />,
     newGroup: <NewGroupPanel onClose={close} />,
-    status: <StatusPanel onClose={close} />,
+  };
+  const sections = {
+    status: <StatusPanel onClose={toChats} />,
+    calls: <CallsPanel onClose={toChats} />,
+    settings: <SettingsPanel onClose={toChats} onLogout={logout} />,
   };
 
   return (
     <div className={`workspace${activeId ? ' chat-open' : ''}${infoOpen && chat ? ' info-open' : ''}`}>
       <div className="left-column">
-        <Sidebar onPanel={setPanel} onLogout={logout} />
-        {panel && panels[panel]}
+        <NavRail section={section} onSection={open} onNewGroup={() => setPanel('newGroup')} />
+        <div className="left-panels">
+          <Sidebar onPanel={open} onLogout={logout} />
+          {section !== 'chats' && sections[section]}
+          {panel && panels[panel]}
+        </div>
       </div>
       {chat ? (
         <ChatPane

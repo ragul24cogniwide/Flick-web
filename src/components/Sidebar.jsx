@@ -137,7 +137,6 @@ export default function Sidebar({ onPanel, onLogout }) {
           <span className="me-name">{me?.username || 'Flick user'}</span>
         </button>
         <div className="sidebar-actions">
-          <IconButton icon="status" label="Status" onClick={() => onPanel('status')} />
           <IconButton icon="newChat" label="New chat" onClick={() => onPanel('newChat')} />
           <div className="menu-wrap">
             <IconButton icon="more" label="Menu" onClick={() => setMenuOpen((v) => !v)} ref={menuBtn} aria-haspopup="menu" aria-expanded={menuOpen} />

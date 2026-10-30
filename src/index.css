@@ -2600,3 +2600,187 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------------- left navigation bar ---------------- */
+
+.left-column {
+  min-width: 384px;
+  max-width: 504px;
+}
+.left-panels {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+.rail {
+  width: 64px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  background: var(--surface-alt);
+  border-right: 1px solid var(--border);
+}
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.rail-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+.rail-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.rail-btn.active {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+}
+.rail-btn:active {
+  transform: scale(0.92);
+}
+.rail-badge {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--brand);
+  color: var(--brand-text);
+  font-size: 10.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface-alt);
+}
+/* Status / Calls / Settings replace the chat list (no slide-over animation) */
+.side-panel.section-panel,
+.left-panels > .side-panel {
+  animation: fade-in 0.14s ease-out;
+}
+
+/* calls */
+.calls-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.call-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+}
+.call-row:hover {
+  background: var(--hover);
+}
+.call-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 6px 10px 14px;
+  text-align: left;
+}
+.call-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.call-row-name {
+  font-size: 15.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.call-row-name.missed {
+  color: var(--danger);
+}
+.call-row-sub {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.call-row-sub svg:first-child {
+  color: var(--success);
+}
+.call-row-sub.bad svg:first-child {
+  color: var(--danger);
+}
+.call-row-sub .dot {
+  margin: 0 2px;
+}
+.call-row-time {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+.call-back {
+  color: var(--brand-strong) !important;
+}
+.call-remove {
+  opacity: 0;
+  width: 32px !important;
+  height: 32px !important;
+}
+.call-row:hover .call-remove,
+.call-remove:focus-visible {
+  opacity: 1;
+}
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* small screens: the bar sits at the bottom of the chat list */
+@media (max-width: 760px) {
+  .left-column {
+    flex-direction: column-reverse;
+    min-width: 0;
+  }
+  .rail {
+    width: 100%;
+    height: 60px;
+    flex-direction: row;
+    padding: 0 12px;
+    border-right: 0;
+    border-top: 1px solid var(--border);
+  }
+  .rail,
+  .rail-group {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+  .rail-group:first-child {
+    flex: 1;
+  }
+  .left-panels {
+    min-height: 0;
+  }
+}
