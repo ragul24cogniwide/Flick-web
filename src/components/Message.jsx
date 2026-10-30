@@ -194,7 +194,7 @@ function ReactionChips({ reactions, myId, nameOf, onReact }) {
 
 /* ---------------- one message ---------------- */
 
-function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, onRetry, onOpenImage, onJump, onReact, nameOf, reactionsOn = true, highlighted }) {
+function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, onRetry, onOpenImage, onJump, onReact, nameOf, reactionsOn = true, highlighted, animate }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reacting, setReacting] = useState(false);
   const btnRef = useRef(null);
@@ -224,7 +224,7 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
 
   return (
     <div
-      className={`msg-row${msg.mine ? ' mine' : ''}${firstOfRun ? ' first' : ''}${highlighted ? ' flash' : ''}${reactions.length ? ' has-reactions' : ''}`}
+      className={`msg-row${msg.mine ? ' mine' : ''}${firstOfRun ? ' first' : ''}${highlighted ? ' flash' : ''}${reactions.length ? ' has-reactions' : ''}${animate ? ' enter' : ''}`}
       id={`m-${msg.id}`}
     >
       {isGroup && !msg.mine && (

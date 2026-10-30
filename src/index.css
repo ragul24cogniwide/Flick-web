@@ -25,6 +25,8 @@
   --bubble-them-text: #18181b;
   --chat-bg: #ece5dd;
   --chat-pattern: rgba(0, 0, 0, 0.035);
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%237A6A4F%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.14%22%3E%3Cpath d=%22M10 14h22a6 6 0 0 1 6 6v9a6 6 0 0 1-6 6H20l-6 5v-5h-4a6 6 0 0 1-6-6v-9a6 6 0 0 1 6-6z%22/%3E%3Cpath d=%22M16 24h14M16 29h9%22/%3E%3Cpath d=%22M86 14c-3-4-9-4-11 1-2-5-8-5-11-1-4 5 1 11 11 17 10-6 15-12 11-17z%22/%3E%3Cpath d=%22M116 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Ccircle cx=%2248%22 cy=%2262%22 r=%2210%22/%3E%3Cpath d=%22M43 65q5 5 10 0%22/%3E%3Cpath d=%22M6 92l5 5 9-10M14 97h2l9-10%22/%3E%3Cpath d=%22M80 84V68l12-3v15%22/%3E%3Ccircle cx=%2277%22 cy=%2284%22 r=%223%22/%3E%3Ccircle cx=%2289%22 cy=%2280%22 r=%223%22/%3E%3Crect x=%2296%22 y=%2296%22 width=%2224%22 height=%2216%22 rx=%224%22/%3E%3Ccircle cx=%22108%22 cy=%22104%22 r=%224.5%22/%3E%3Cpath d=%22M101 96l2-4h7l2 4%22/%3E%3Cpath d=%22M40 100h14v8a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM54 102h3a3 3 0 0 1 0 6h-3%22/%3E%3Cpath d=%22M106 72l1.8 3.8 4.2.6-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-.6z%22/%3E%3C/g%3E%3Cg fill=%22%237A6A4F%22 opacity=%220.14%22%3E%3Ccircle cx=%2244.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2251.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2264%22 cy=%22112%22 r=%221.6%22/%3E%3Ccircle cx=%2230%22 cy=%22118%22 r=%221.2%22/%3E%3Ccircle cx=%22122%22 cy=%2210%22 r=%221.2%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.32), rgba(122, 106, 79, 0.07));
   --danger: #dc2626;
   --danger-soft: #fef2f2;
   --success: #10b981;
@@ -61,6 +63,8 @@
     --bubble-them-text: #ecedef;
     --chat-bg: #1c2026;
     --chat-pattern: rgba(255, 255, 255, 0.025);
+    --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23FFFFFF%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.07%22%3E%3Cpath d=%22M10 14h22a6 6 0 0 1 6 6v9a6 6 0 0 1-6 6H20l-6 5v-5h-4a6 6 0 0 1-6-6v-9a6 6 0 0 1 6-6z%22/%3E%3Cpath d=%22M16 24h14M16 29h9%22/%3E%3Cpath d=%22M86 14c-3-4-9-4-11 1-2-5-8-5-11-1-4 5 1 11 11 17 10-6 15-12 11-17z%22/%3E%3Cpath d=%22M116 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Ccircle cx=%2248%22 cy=%2262%22 r=%2210%22/%3E%3Cpath d=%22M43 65q5 5 10 0%22/%3E%3Cpath d=%22M6 92l5 5 9-10M14 97h2l9-10%22/%3E%3Cpath d=%22M80 84V68l12-3v15%22/%3E%3Ccircle cx=%2277%22 cy=%2284%22 r=%223%22/%3E%3Ccircle cx=%2289%22 cy=%2280%22 r=%223%22/%3E%3Crect x=%2296%22 y=%2296%22 width=%2224%22 height=%2216%22 rx=%224%22/%3E%3Ccircle cx=%22108%22 cy=%22104%22 r=%224.5%22/%3E%3Cpath d=%22M101 96l2-4h7l2 4%22/%3E%3Cpath d=%22M40 100h14v8a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM54 102h3a3 3 0 0 1 0 6h-3%22/%3E%3Cpath d=%22M106 72l1.8 3.8 4.2.6-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-.6z%22/%3E%3C/g%3E%3Cg fill=%22%23FFFFFF%22 opacity=%220.07%22%3E%3Ccircle cx=%2244.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2251.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2264%22 cy=%22112%22 r=%221.6%22/%3E%3Ccircle cx=%2230%22 cy=%22118%22 r=%221.2%22/%3E%3Ccircle cx=%22122%22 cy=%2210%22 r=%221.2%22/%3E%3C/g%3E%3C/svg%3E");
+    --chat-wash: linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.22));
     --danger: #f87171;
     --danger-soft: #3b2629;
     --success: #34d399;
@@ -96,6 +100,8 @@
   --bubble-them-text: #ecedef;
   --chat-bg: #1c2026;
   --chat-pattern: rgba(255, 255, 255, 0.025);
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23FFFFFF%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.07%22%3E%3Cpath d=%22M10 14h22a6 6 0 0 1 6 6v9a6 6 0 0 1-6 6H20l-6 5v-5h-4a6 6 0 0 1-6-6v-9a6 6 0 0 1 6-6z%22/%3E%3Cpath d=%22M16 24h14M16 29h9%22/%3E%3Cpath d=%22M86 14c-3-4-9-4-11 1-2-5-8-5-11-1-4 5 1 11 11 17 10-6 15-12 11-17z%22/%3E%3Cpath d=%22M116 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Ccircle cx=%2248%22 cy=%2262%22 r=%2210%22/%3E%3Cpath d=%22M43 65q5 5 10 0%22/%3E%3Cpath d=%22M6 92l5 5 9-10M14 97h2l9-10%22/%3E%3Cpath d=%22M80 84V68l12-3v15%22/%3E%3Ccircle cx=%2277%22 cy=%2284%22 r=%223%22/%3E%3Ccircle cx=%2289%22 cy=%2280%22 r=%223%22/%3E%3Crect x=%2296%22 y=%2296%22 width=%2224%22 height=%2216%22 rx=%224%22/%3E%3Ccircle cx=%22108%22 cy=%22104%22 r=%224.5%22/%3E%3Cpath d=%22M101 96l2-4h7l2 4%22/%3E%3Cpath d=%22M40 100h14v8a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM54 102h3a3 3 0 0 1 0 6h-3%22/%3E%3Cpath d=%22M106 72l1.8 3.8 4.2.6-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-.6z%22/%3E%3C/g%3E%3Cg fill=%22%23FFFFFF%22 opacity=%220.07%22%3E%3Ccircle cx=%2244.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2251.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2264%22 cy=%22112%22 r=%221.6%22/%3E%3Ccircle cx=%2230%22 cy=%22118%22 r=%221.2%22/%3E%3Ccircle cx=%22122%22 cy=%2210%22 r=%221.2%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.22));
   --danger: #f87171;
   --danger-soft: #3b2629;
   --success: #34d399;
@@ -490,7 +496,7 @@ a {
 
 .toasts {
   position: fixed;
-  bottom: 24px;
+  bottom: 88px; /* above the message box */
   left: 50%;
   transform: translateX(-50%);
   z-index: 120;
@@ -1099,9 +1105,10 @@ a {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: var(--chat-bg);
-  background-image: radial-gradient(var(--chat-pattern) 1.2px, transparent 1.2px);
-  background-size: 18px 18px;
+  /* chat colour + soft wash + tiled Flick doodles (stay still while messages scroll over them) */
+  background-color: var(--chat-bg);
+  background-image: var(--chat-wash), var(--chat-doodle);
+  background-size: 100% 100%, 132px 132px;
 }
 .chat-header-main {
   flex: 1;
@@ -2461,5 +2468,135 @@ a {
   .call-local {
     bottom: 110px;
     right: 12px;
+  }
+}
+
+/* ---------------- smoothness ---------------- */
+
+/* new messages slide in (only ones that arrive while the chat is open) */
+.msg-row.enter {
+  animation: msg-in 0.2s ease-out;
+}
+.msg-row.mine.enter {
+  transform-origin: bottom right;
+}
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+/* switching chats: a quick fade instead of a hard cut */
+.chat-pane:not(.empty-pane) .messages-inner {
+  animation: fade-in 0.16s ease-out;
+}
+.menu,
+.reaction-picker,
+.emoji-picker {
+  animation: pop-in 0.12s ease-out;
+}
+.modal {
+  animation: pop-in 0.16s ease-out;
+}
+.modal-backdrop,
+.lightbox {
+  animation: fade-in 0.15s ease-out;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.chat-row,
+.person-row,
+.archived-row,
+.menu-item,
+.chip,
+.send-btn,
+.btn {
+  transition: background-color 0.12s ease, color 0.12s ease, transform 0.12s ease, filter 0.12s ease;
+}
+.send-btn:active,
+.btn:active,
+.icon-btn:active {
+  transform: scale(0.94);
+}
+.messages {
+  overscroll-behavior: contain;
+}
+.chat-list {
+  overscroll-behavior: contain;
+}
+
+/* loading placeholders instead of spinners */
+.msg-skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 0;
+}
+.msg-skeleton {
+  height: 38px;
+  border-radius: 8px;
+  max-width: 420px;
+}
+.msg-skeleton.mine {
+  align-self: flex-end;
+}
+.row-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 72px;
+  padding: 0 14px;
+}
+.sk-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sk-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sk-lines span {
+  height: 11px;
+  border-radius: 6px;
+}
+.msg-skeleton,
+.sk-avatar,
+.sk-lines span {
+  background: linear-gradient(90deg, var(--surface-alt) 25%, var(--hover) 50%, var(--surface-alt) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+.msg-skeleton {
+  background-color: var(--bubble-them);
+  opacity: 0.7;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* People who turned on "reduce motion" get no animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -2,7 +2,7 @@ import { Fragment, memo, useMemo, useRef, useState } from 'react';
 import { listTime, toMs, typingLabel } from '../lib/format';
 import { openChat, setArchived, useStore } from '../lib/store';
 import Icon from './Icon';
-import { Avatar, IconButton, Menu, Spinner } from './ui';
+import { Avatar, IconButton, Menu } from './ui';
 
 const FILTERS = [
   ['all', 'All'],
@@ -192,8 +192,16 @@ export default function Sidebar({ onPanel, onLogout }) {
 
       <div className="chat-list">
         {!ready ? (
-          <div className="list-empty">
-            <Spinner />
+          <div aria-label="Loading chats">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="row-skeleton">
+                <span className="sk-avatar" />
+                <span className="sk-lines">
+                  <span style={{ width: `${55 - i * 4}%` }} />
+                  <span style={{ width: `${80 - i * 6}%` }} />
+                </span>
+              </div>
+            ))}
           </div>
         ) : syncError && !list.length ? (
           <div className="list-empty">

@@ -99,6 +99,8 @@ function normChat(item, prev = {}) {
     archived: item.archived ?? prev.archived ?? false,
     last_seen: item.last_seen ?? prev.last_seen ?? null,
     online: prev.online ?? !!item.online,
+    // The server's unread count covers messages up to this time (see bumpChat)
+    syncedTime: item.time || prev.syncedTime || '',
     isAgent: String(item.id) === AGENT_ID,
   };
 }
@@ -653,6 +655,9 @@ function bumpChat(chatId, { preview, ts, unreadDelta = 0 }) {
     const c = s.chats[chatId];
     if (!c) return null;
     const reading = chatId === s.activeId && isActiveVisible();
+    // Already included in the last sync's unread count (it arrived while the sync was in flight)
+    const counted = c.syncedTime && ts && ts <= toMs(c.syncedTime);
+    if (counted) return null;
     return {
       chats: {
         ...s.chats,

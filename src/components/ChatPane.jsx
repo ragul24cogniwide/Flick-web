@@ -40,6 +40,9 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
   const menuBtn = useRef(null);
   const scrollRef = useRef(null);
   const stick = useRef(true);
+  const lastHeight = useRef(0);
+  // Messages newer than this slide in; the ones already there when the chat opened don't
+  const [openedAt] = useState(() => Date.now());
   const prevInfo = useRef({ firstId: null, lastId: null, height: 0, top: 0, chatId: null });
 
   const list = box?.list || EMPTY;
@@ -81,9 +84,32 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
     if (el && stick.current) el.scrollTop = el.scrollHeight;
   }, [typers.length]);
 
+  // Photos and voice notes finish loading after the chat opens and grow taller; while you're
+  // reading the newest messages, stay pinned to the bottom instead of being pushed up
+  useEffect(() => {
+    const el = scrollRef.current;
+    const inner = el?.firstElementChild;
+    if (!el || !inner || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => {
+      if (!stick.current) return;
+      el.scrollTop = el.scrollHeight;
+      lastHeight.current = el.scrollHeight;
+    });
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, []);
+
   const onScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
+    // Content grew (a photo loaded) while pinned to the newest message: the browser moved the
+    // view, not the reader. Stay pinned.
+    if (stick.current && el.scrollHeight !== lastHeight.current) {
+      lastHeight.current = el.scrollHeight;
+      el.scrollTop = el.scrollHeight;
+      return;
+    }
+    lastHeight.current = el.scrollHeight;
     const bottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
     stick.current = bottom;
     setAtBottom(bottom);
@@ -232,8 +258,10 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
             </div>
           )}
           {box?.loading && !list.length && (
-            <div className="older-loading">
-              <Spinner />
+            <div className="msg-skeletons" aria-label="Loading messages">
+              {[62, 40, 75, 48, 30, 66].map((w, i) => (
+                <div key={i} className={`msg-skeleton${i % 3 === 1 ? ' mine' : ''}`} style={{ width: `${w}%` }} />
+              ))}
             </div>
           )}
           {box?.error && !list.length && (
@@ -268,6 +296,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
                 onJump={jumpTo}
                 onReact={onReact}
                 nameOf={nameOf}
+                animate={r.msg.ts > openedAt}
                 reactionsOn={!chat.isAgent}
               />
             ),
