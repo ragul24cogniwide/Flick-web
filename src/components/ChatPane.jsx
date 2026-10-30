@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { startCall } from '../lib/calls';
 import { dayLabel, lastSeenText, sameUser, typingLabel } from '../lib/format';
-import { confirmDialog, deleteMessage, loadHistory, loadOlder, reactToMessage, retryMessage, useStore } from '../lib/store';
+import { confirmDialog, deleteMessage, loadHistory, loadOlder, reactToMessage, retryMessage, setArchived, useStore } from '../lib/store';
 import Composer from './Composer';
 import Icon from './Icon';
 import Message from './Message';
@@ -199,6 +199,15 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
                 onClose={() => setMenuOpen(false)}
                 items={[
                   { label: isGroup ? 'Group info' : 'Contact info', icon: isGroup ? 'users' : 'info', onClick: onToggleInfo },
+                  !chat.isAgent && {
+                    label: chat.archived ? 'Unarchive chat' : 'Archive chat',
+                    icon: 'archive',
+                    onClick: () => {
+                      // Archiving closes the chat, like WhatsApp
+                      setArchived([chat.id], !chat.archived);
+                      if (!chat.archived) onClose();
+                    },
+                  },
                   { label: 'Close chat', icon: 'x', onClick: onClose },
                 ]}
               />

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { initialsOf, mediaUrl, memberColor, safeColor } from '../lib/format';
-import { setState, useStore } from '../lib/store';
+import { dismissToast, setState, useStore } from '../lib/store';
 import Icon from './Icon';
 
 /* ---------------- avatar ---------------- */
@@ -174,7 +174,19 @@ export function Toasts() {
     <div className="toasts" role="status" aria-live="polite">
       {toasts.map((t) => (
         <div key={t.id} className={`toast toast-${t.kind}`}>
-          {t.text}
+          <span>{t.text}</span>
+          {t.action && (
+            <button
+              type="button"
+              className="toast-action"
+              onClick={() => {
+                dismissToast(t.id);
+                t.action.onClick();
+              }}
+            >
+              {t.action.label}
+            </button>
+          )}
         </div>
       ))}
     </div>

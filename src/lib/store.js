@@ -52,10 +52,15 @@ export function useStore(selector) {
 /* ------------------------------------------------------------------ */
 
 let toastSeq = 0;
-export function toast(text, kind = 'info') {
+/** toast(text, kind, action?) where action = { label, onClick } (e.g. Undo) */
+export function toast(text, kind = 'info', action = null) {
   const id = ++toastSeq;
-  setState((s) => ({ toasts: [...s.toasts, { id, text, kind }] }));
-  setTimeout(() => setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 4200);
+  setState((s) => ({ toasts: [...s.toasts, { id, text, kind, action }] }));
+  setTimeout(() => dismissToast(id), action ? 5500 : 4200);
+}
+
+export function dismissToast(id) {
+  setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
 }
 
 /** confirmDialog({ title, body, buttons: [{ label, danger, onClick }] }): a small confirm dialog. */
@@ -91,6 +96,7 @@ function normChat(item, prev = {}) {
     is_group: !!(item.is_group || isGroupId(String(item.id))),
     member_count: item.member_count ?? prev.member_count ?? null,
     is_member: item.is_member ?? prev.is_member ?? true,
+    archived: item.archived ?? prev.archived ?? false,
     last_seen: item.last_seen ?? prev.last_seen ?? null,
     online: prev.online ?? !!item.online,
     isAgent: String(item.id) === AGENT_ID,
@@ -215,8 +221,9 @@ function findMessage(id) {
   return null;
 }
 
+// Unread chats in the tab title (archived chats don't count, like WhatsApp)
 function totalUnread() {
-  return Object.values(state.chats).reduce((n, c) => n + (c.unread ? 1 : 0), 0);
+  return Object.values(state.chats).reduce((n, c) => n + (c.unread && !c.archived ? 1 : 0), 0);
 }
 
 /* ------------------------------------------------------------------ */
@@ -566,6 +573,38 @@ function removeLocal(chatId, id) {
 }
 
 /* ------------------------------------------------------------------ */
+/* archived chats (synced with my phone)                                */
+/* ------------------------------------------------------------------ */
+
+/** Moves chats in or out of Archived at once; puts them back if the server refuses. */
+export async function setArchived(ids, archived, { undo = true } = {}) {
+  const list = ids.filter((id) => state.chats[id] && !state.chats[id].isAgent);
+  if (!list.length) return;
+  const apply = (value, which) =>
+    setState((s) => {
+      const chats = { ...s.chats };
+      which.forEach((id) => chats[id] && (chats[id] = { ...chats[id], archived: value }));
+      return { chats };
+    });
+  apply(archived, list);
+  updateTitle(totalUnread());
+  if (undo) {
+    const n = list.length;
+    toast(`${n === 1 ? 'Chat' : `${n} chats`} ${archived ? 'archived' : 'unarchived'}`, 'info', {
+      label: 'Undo',
+      onClick: () => setArchived(list, !archived, { undo: false }),
+    });
+  }
+  const results = await Promise.all(list.map((id) => api.archiveChat(id, archived)));
+  const failed = list.filter((_, i) => !results[i].ok);
+  if (failed.length) {
+    apply(!archived, failed);
+    updateTitle(totalUnread());
+    toast(results.find((r) => !r.ok)?.error || 'Couldn’t update the chat', 'error');
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* typing                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -753,6 +792,16 @@ function handleFrame({ type, data }) {
           return next === m.status ? m : { ...m, status: next };
         }),
       );
+      return;
+    }
+
+    case 'chat_archived': {
+      // Archived / unarchived on my phone
+      const chatId = isGroupId(data?.peer_id) ? data.peer_id : chatIdFor(data?.peer_id);
+      if (chatId) {
+        patchChat(chatId, { archived: !!data.archived });
+        updateTitle(totalUnread());
+      }
       return;
     }
 

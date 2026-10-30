@@ -80,6 +80,8 @@ export const sendMessageRest = (payload) => request('/api/messages/send', { meth
 export const editMessage = (id, content) => request(`/api/messages/${enc(id)}`, { method: 'PUT', body: { content } });
 export const deleteMessage = (id, forEveryone) =>
   request(`/api/messages/${enc(id)}?for_everyone=${forEveryone ? 'true' : 'false'}`, { method: 'DELETE' });
+export const archiveChat = (peerId, archived) =>
+  request(`/api/chats/${enc(peerId)}/archive`, { method: 'PUT', body: { archived } });
 export const reactToMessage = (id, emoji) =>
   request(`/api/messages/${enc(id)}/reaction`, { method: 'PUT', body: { emoji: emoji || null } });
 export const uploadImage = (dataUrl, ext) =>
