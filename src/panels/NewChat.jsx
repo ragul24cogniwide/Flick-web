@@ -1,37 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import * as api from '../lib/api';
 import { GROUP_COLORS, initialsOf } from '../lib/format';
-import { openChat, openPerson, sync, toast, useStore } from '../lib/store';
+import { usePeople } from '../lib/people';
+import { openChat, openPerson, sync, toast } from '../lib/store';
 import Icon from '../components/Icon';
 import { PanelHeader, Spinner } from '../components/ui';
 import PeoplePicker from './PeoplePicker';
-
-/**
- * People you can chat with: your phone contacts who are on Flick (the phone app reports which
- * accounts they are, with their Flick names) plus everyone you already have a chat with.
- */
-const usePeople = () => {
-  const chats = useStore((s) => s.chats);
-  const [contacts, setContacts] = useState(null); // null while loading
-  useEffect(() => {
-    let alive = true;
-    api.contactsOnFlick().then((res) => {
-      if (alive) setContacts(res.ok && Array.isArray(res.data) ? res.data : []);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
-  const people = useMemo(() => {
-    const byId = new Map();
-    (contacts || []).forEach((c) => byId.set(c.id, { ...c, phone: c.phone_number }));
-    Object.values(chats)
-      .filter((c) => !c.is_group && !c.isAgent)
-      .forEach((c) => byId.set(c.id, { ...byId.get(c.id), ...c }));
-    return [...byId.values()];
-  }, [chats, contacts]);
-  return { people, loading: contacts === null, noContacts: contacts !== null && contacts.length === 0 };
-};
 
 const CONTACTS_HINT =
   'Your phone contacts on Flick show here after you open New chat in the Flick app on your phone. You can also type any phone number.';

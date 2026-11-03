@@ -6,6 +6,7 @@ import { markCallsSeen } from '../lib/notify';
 import { confirmDialog, loadCalls, openPerson, setState, toast, useStore } from '../lib/store';
 import Icon from '../components/Icon';
 import { Avatar, IconButton, PanelHeader, Spinner } from '../components/ui';
+import { usePeople } from '../lib/people';
 
 const LABEL = {
   completed: (c) => (c.direction === 'outgoing' ? 'Outgoing' : 'Incoming'),
@@ -51,10 +52,70 @@ function CallRow({ call, inCall }) {
   );
 }
 
+/**
+ * New call: your phone contacts on Flick and people you chat with. The server only rings people
+ * in your contacts, or who have messaged or called you; anyone else gets a "Can't call" note.
+ */
+function NewCallPanel({ onBack, inCall }) {
+  const { people, loading, noContacts } = usePeople();
+  const [query, setQuery] = useState('');
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const digits = q.replace(/\D/g, '');
+    return people
+      .filter((p) => !q || p.name?.toLowerCase().includes(q) || (digits.length >= 3 && (p.phone || p.phone_number || '').includes(digits)))
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  }, [people, query]);
+  const call = (p, video) => {
+    startCall(p.id, video, p);
+    onBack();
+  };
+  return (
+    <div className="side-panel">
+      <PanelHeader title="New call" onBack={onBack} />
+      {noContacts && (
+        <p className="picker-note">
+          Your phone contacts on Flick show here after you open New chat in the Flick app on your phone.
+        </p>
+      )}
+      <div className="search-box inset">
+        <Icon name="search" size={17} />
+        <input type="search" placeholder="Search contacts" value={query} maxLength={40} onChange={(e) => setQuery(e.target.value)} autoFocus />
+      </div>
+      <div className="picker-list">
+        {loading && !shown.length && (
+          <p className="picker-note">
+            <Spinner size={16} /> Loading your contacts…
+          </p>
+        )}
+        {!loading && !shown.length && (
+          <p className="picker-note">
+            {query ? 'No one found.' : 'You can call your contacts on Flick, and anyone who has messaged or called you.'}
+          </p>
+        )}
+        {shown.map((p) => (
+          <div key={p.id} className="call-row">
+            <span className="call-row-main">
+              <Avatar id={p.id} name={p.name} color={p.avatar_color} url={p.avatar_url} size={40} />
+              <span className="call-row-text">
+                <span className="call-row-name">{p.name}</span>
+                <span className="call-row-sub">{p.quote || p.phone || p.phone_number}</span>
+              </span>
+            </span>
+            <IconButton icon="video" label={`Video call ${p.name}`} className="call-back" disabled={inCall} onClick={() => call(p, true)} />
+            <IconButton icon="phone" label={`Voice call ${p.name}`} className="call-back" disabled={inCall} onClick={() => call(p, false)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function CallsPanel({ onClose }) {
   const calls = useStore((s) => s.calls);
   const inCall = useStore((s) => !!s.call);
   const [filter, setFilter] = useState('all');
+  const [picking, setPicking] = useState(false);
 
   useEffect(() => {
     loadCalls();
@@ -84,9 +145,12 @@ export default function CallsPanel({ onClose }) {
       ],
     });
 
+  if (picking) return <NewCallPanel onBack={() => setPicking(false)} inCall={inCall} />;
+
   return (
     <div className="side-panel section-panel">
       <PanelHeader title="Calls" onBack={onClose}>
+        <IconButton icon="phone" label="New call" onClick={() => setPicking(true)} disabled={inCall} />
         <IconButton icon="trash" label="Clear call log" onClick={clearAll} disabled={!calls?.length} />
       </PanelHeader>
       <div className="filters">
@@ -109,7 +173,7 @@ export default function CallsPanel({ onClose }) {
             <span className="empty-icon">
               <Icon name="phone" size={30} />
             </span>
-            <p>{filter === 'missed' ? 'No missed calls.' : 'No calls yet. Start one from any chat with the 📞 or 📹 button.'}</p>
+            <p>{filter === 'missed' ? 'No missed calls.' : 'No calls yet. Tap 📞 above to call a contact, or use 📞 / 📹 in a chat.'}</p>
           </div>
         ) : (
           shown.map((c) => <CallRow key={c.id} call={c} inCall={inCall} />)

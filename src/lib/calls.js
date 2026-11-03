@@ -157,21 +157,22 @@ function finish(label) {
   }, 1500);
 }
 
-function peerCard(chatId) {
-  const chat = getState().chats[chatId];
-  return { name: chat?.name || 'Flick user', color: chat?.avatar_color, avatarUrl: chat?.avatar_url || null };
+function peerCard(chatId, person) {
+  const p = getState().chats[chatId] || person;
+  return { name: p?.name || 'Flick user', color: p?.avatar_color, avatarUrl: p?.avatar_url || null };
 }
 
 /* ---------------- outgoing ---------------- */
 
-export async function startCall(chatId, video) {
+/** `person` names the call screen when there's no chat with them yet (e.g. from New call). */
+export async function startCall(chatId, video, person) {
   if (call()) {
     toast('You’re already in a call.');
     return;
   }
   const callId = newCallId();
   setState({
-    call: { phase: 'outgoing', callId, peerId: chatId, ...peerCard(chatId), video: !!video, muted: false, cameraOff: false, label: 'Calling…', outgoing: true },
+    call: { phase: 'outgoing', callId, peerId: chatId, ...peerCard(chatId, person), video: !!video, muted: false, cameraOff: false, label: 'Calling…', outgoing: true },
   });
   try {
     await openMedia(video);
@@ -179,7 +180,11 @@ export async function startCall(chatId, video) {
     const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: !!video });
     await pc.setLocalDescription(offer);
     const res = await api.callOffer({ call_id: callId, receiver_id: chatId, video: !!video, sdp: offer.sdp });
-    if (!res.ok) return finish(res.error || 'Couldn’t start the call');
+    if (!res.ok) {
+      // Refused (not in your contacts, not on Flick): keep the reason readable after the call screen closes
+      if (res.status === 403 || res.status === 404) toast(res.error, 'error');
+      return finish(res.status === 403 || res.status === 404 ? 'Can’t call' : res.error || 'Couldn’t start the call');
+    }
     setReady();
   } catch (e) {
     return finish(mediaError(e, video));
