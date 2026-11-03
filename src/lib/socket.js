@@ -2,6 +2,11 @@
  * The live connection. It opens with a one-time ticket (never the token in the URL), pings every
  * 10 s, reconnects with backoff, and reconnects at once when the tab or the network comes back.
  * Close code 4401 = this browser was logged out: stop and sign out.
+ *
+ * Presence: an open tab doesn't make you look online. You're online while the tab is visible,
+ * focused and being used; it reports you away 30 s after you switch tabs or minimise (a quick
+ * look elsewhere doesn't flicker), or after 5 minutes without mouse or keyboard. The server shows
+ * you online while any of your devices (this tab, another tab, the phone app) is in use.
  */
 import { getWsTicket } from './api';
 import { WS_BASE } from './config';
@@ -13,6 +18,8 @@ const RECONNECT_MIN = 1000;
 const RECONNECT_MAX = 20000;
 const TYPING_THROTTLE_MS = 2000;
 const UNAUTHORIZED = 4401;
+const AWAY_GRACE_MS = 30000;
+const IDLE_MS = 5 * 60000;
 
 class Socket {
   constructor() {
@@ -28,17 +35,63 @@ class Socket {
     this.connecting = false;
     this.typingSentAt = {};
     this.connected = false;
+    this.lastInputAt = Date.now();
+    this.presenceSent = null; // what this connection last told the server: true (in use) / false (away)
+    this.awayTimer = null;
 
     if (typeof window !== 'undefined') {
       const wake = () => {
         if (this.stopped) return;
         if (!this.isOpen()) this.reconnectNow();
-        else this.send({ type: 'presence_online', data: {} });
+        else this.reportPresence();
       };
       window.addEventListener('online', wake);
-      window.addEventListener('focus', wake);
-      document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && wake());
+      window.addEventListener('focus', () => {
+        this.lastInputAt = Date.now();
+        wake();
+      });
+      window.addEventListener('blur', () => this.reportPresence());
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') this.lastInputAt = Date.now();
+        wake();
+      });
+      const onInput = () => {
+        this.lastInputAt = Date.now();
+        if (this.presenceSent !== true || this.awayTimer) this.reportPresence();
+      };
+      ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'].forEach((ev) =>
+        window.addEventListener(ev, onInput, { passive: true })
+      );
     }
+  }
+
+  /** Visible, focused, and touched in the last few minutes. */
+  inUse() {
+    return (
+      typeof document !== 'undefined' &&
+      document.visibilityState === 'visible' &&
+      document.hasFocus() &&
+      Date.now() - this.lastInputAt < IDLE_MS
+    );
+  }
+
+  /** Tells the server when this tab starts or stops being used (away after a short grace period). */
+  reportPresence() {
+    if (!this.isOpen()) return;
+    if (this.inUse()) {
+      clearTimeout(this.awayTimer);
+      this.awayTimer = null;
+      if (this.presenceSent !== true) this.sendPresence(true);
+    } else if (this.presenceSent !== false && !this.awayTimer) {
+      this.awayTimer = setTimeout(() => {
+        this.awayTimer = null;
+        if (!this.inUse()) this.sendPresence(false);
+      }, AWAY_GRACE_MS);
+    }
+  }
+
+  sendPresence(inUse) {
+    if (this.send({ type: inUse ? 'presence_online' : 'presence_offline', data: {} })) this.presenceSent = inUse;
   }
 
   start(userId) {
@@ -52,6 +105,8 @@ class Socket {
     this.queue = [];
     clearTimeout(this.retryTimer);
     clearInterval(this.pingTimer);
+    clearTimeout(this.awayTimer);
+    this.awayTimer = null;
     this.drop();
     this.setConnected(false);
   }
@@ -116,7 +171,10 @@ class Socket {
       if (this.ws !== ws) return;
       this.delay = RECONNECT_MIN;
       this.lastFrameAt = Date.now();
-      this.send({ type: 'presence_online', data: {} });
+      // Say straight away whether this tab is in use (a background tab reconnecting stays away)
+      clearTimeout(this.awayTimer);
+      this.awayTimer = null;
+      this.sendPresence(this.inUse());
       const pending = this.queue.splice(0);
       pending.forEach((f) => this.send(f));
       clearInterval(this.pingTimer);
@@ -143,6 +201,7 @@ class Socket {
       if (this.ws !== ws) return;
       this.ws = null;
       clearInterval(this.pingTimer);
+      this.presenceSent = null;
       this.setConnected(false);
       if (e.code === UNAUTHORIZED) {
         this.stop();
@@ -166,6 +225,7 @@ class Socket {
       return;
     }
     this.send({ type: 'ping' });
+    this.reportPresence(); // notices going idle (no input for a while) with the tab still in front
   }
 
   /** Sends now, or keeps receipts / call signals for when the connection is back. */

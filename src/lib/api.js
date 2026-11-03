@@ -74,6 +74,8 @@ export const getUser = (id) => request(`/api/users/${enc(id)}`);
 export const syncConversations = (cursor) =>
   request(`/api/sync/conversations?limit=200${cursor ? `&cursor=${enc(cursor)}` : ''}`);
 export const lookupNumbers = (phone_numbers) => request('/api/contacts/sync', { method: 'POST', body: { phone_numbers } });
+// Your phone contacts who are on Flick, as last reported by the phone app (the browser can't read contacts)
+export const contactsOnFlick = () => request('/api/contacts/on-flick');
 export const getHistory = (peerId, offset = 0, limit = 50) =>
   request(`/api/messages/${enc(peerId)}?limit=${limit}&offset=${offset}`);
 export const sendMessageRest = (payload) => request('/api/messages/send', { method: 'POST', body: payload });

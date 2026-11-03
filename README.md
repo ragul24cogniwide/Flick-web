@@ -32,6 +32,8 @@ Browsers unused for 14 days are signed out automatically.
 ## What works
 
 - **Chat list:** search, plus All / Unread / Groups filters, unread badges, online dots, and typing shown in the list.
+- **New chat:** your phone contacts who are on Flick (the phone app reports which accounts they are each time you open New chat there; names stay on the phone, so Flick Web shows Flick names), people you already chat with, or any phone number.
+- **Online status:** you show as online while you're using Flick somewhere: this tab while it's visible, focused and used, or the phone app in the foreground. An open tab you aren't using doesn't count: 30 s after you switch away or minimise, or after 5 minutes without mouse or keyboard, it reports you away.
 - **Chats:**
   - grey and blue ticks, replies, edit, delete for me or for everyone
   - photos: send, paste a screenshot, or view full size

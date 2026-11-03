@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as api from '../lib/api';
 import { GROUP_COLORS, initialsOf } from '../lib/format';
 import { openChat, openPerson, sync, toast, useStore } from '../lib/store';
@@ -6,13 +6,38 @@ import Icon from '../components/Icon';
 import { PanelHeader, Spinner } from '../components/ui';
 import PeoplePicker from './PeoplePicker';
 
+/**
+ * People you can chat with: your phone contacts who are on Flick (the phone app reports which
+ * accounts they are, with their Flick names) plus everyone you already have a chat with.
+ */
 const usePeople = () => {
   const chats = useStore((s) => s.chats);
-  return useMemo(() => Object.values(chats).filter((c) => !c.is_group && !c.isAgent), [chats]);
+  const [contacts, setContacts] = useState(null); // null while loading
+  useEffect(() => {
+    let alive = true;
+    api.contactsOnFlick().then((res) => {
+      if (alive) setContacts(res.ok && Array.isArray(res.data) ? res.data : []);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const people = useMemo(() => {
+    const byId = new Map();
+    (contacts || []).forEach((c) => byId.set(c.id, { ...c, phone: c.phone_number }));
+    Object.values(chats)
+      .filter((c) => !c.is_group && !c.isAgent)
+      .forEach((c) => byId.set(c.id, { ...byId.get(c.id), ...c }));
+    return [...byId.values()];
+  }, [chats, contacts]);
+  return { people, loading: contacts === null, noContacts: contacts !== null && contacts.length === 0 };
 };
 
+const CONTACTS_HINT =
+  'Your phone contacts on Flick show here after you open New chat in the Flick app on your phone. You can also type any phone number.';
+
 export function NewChatPanel({ onClose, onNewGroup }) {
-  const people = usePeople();
+  const { people, loading, noContacts } = usePeople();
   return (
     <div className="side-panel">
       <PanelHeader title="New chat" onBack={onClose} />
@@ -22,8 +47,10 @@ export function NewChatPanel({ onClose, onNewGroup }) {
         </span>
         <span className="person-name">New group</span>
       </button>
+      {noContacts && <p className="picker-note">{CONTACTS_HINT}</p>}
       <PeoplePicker
         people={people}
+        loading={loading}
         single
         onPick={(p) => {
           openPerson({ ...p, phone_number: p.phone || p.phone_number });
@@ -35,7 +62,7 @@ export function NewChatPanel({ onClose, onNewGroup }) {
 }
 
 export function NewGroupPanel({ onClose }) {
-  const people = usePeople();
+  const { people, loading } = usePeople();
   const [step, setStep] = useState('pick');
   const [picked, setPicked] = useState([]);
   const [name, setName] = useState('');
@@ -61,7 +88,7 @@ export function NewGroupPanel({ onClose }) {
     return (
       <div className="side-panel">
         <PanelHeader title="Add group members" onBack={onClose} />
-        <PeoplePicker people={people} picked={picked} onChange={setPicked} />
+        <PeoplePicker people={people} loading={loading} picked={picked} onChange={setPicked} />
         {picked.length > 0 && (
           <button type="button" className="fab" onClick={() => setStep('details')} aria-label="Next">
             <Icon name="back" size={22} className="flip" />

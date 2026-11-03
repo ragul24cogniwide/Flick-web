@@ -10,10 +10,10 @@ const cleanNumber = (raw) => {
 };
 
 /**
- * Pick people from your chats, or find someone by phone number. `single` picks one person
- * (new chat); otherwise several (groups), shown as removable chips.
+ * Pick people from your contacts on Flick and your chats, or find anyone by phone number.
+ * `single` picks one person (new chat); otherwise several (groups), shown as removable chips.
  */
-export default function PeoplePicker({ people, picked = [], onChange, single = false, onPick }) {
+export default function PeoplePicker({ people, loading = false, picked = [], onChange, single = false, onPick }) {
   const [query, setQuery] = useState('');
   const [found, setFound] = useState([]);
   const [looking, setLooking] = useState(false);
@@ -106,7 +106,14 @@ export default function PeoplePicker({ people, picked = [], onChange, single = f
             {!single && <span className={`check-circle${pickedIds.has(p.id) ? ' on' : ''}`}>{pickedIds.has(p.id) && <Icon name="check" size={14} stroke={3} />}</span>}
           </button>
         ))}
-        {!shown.length && !number && <p className="picker-note">{query ? 'No one found. Try a phone number.' : 'No contacts yet. Enter a phone number.'}</p>}
+        {loading && !shown.length && (
+          <p className="picker-note">
+            <Spinner size={16} /> Loading your contacts…
+          </p>
+        )}
+        {!loading && !shown.length && !number && (
+          <p className="picker-note">{query ? 'No one found. Type their full phone number to find them.' : 'No contacts yet. Type a phone number to find someone on Flick.'}</p>
+        )}
       </div>
     </div>
   );
