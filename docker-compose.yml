@@ -1,0 +1,26 @@
+# Flick Web on its own (no backend, database or Redis).
+#
+#   docker compose up --build -d     start it
+#   open http://localhost:8080       Flick Web
+#   docker compose down              stop it
+#
+# By default it talks to the live Render backend. To use another backend, set FLICK_WEB_API before
+# starting (in your shell, or in a .env file next to this one), then rebuild:
+#   FLICK_WEB_API=http://localhost:8000 docker compose up --build -d
+# The address is fixed when the image is built, so always pass --build after changing it.
+#
+# To run the web app together with a local backend, use ../docker-compose.yml instead.
+
+name: flick-web
+
+services:
+  web:
+    build:
+      context: .
+      args:
+        # The address your BROWSER uses to reach the backend
+        VITE_FLICK_API: ${FLICK_WEB_API:-https://pocket-backend-7lmx.onrender.com}
+    image: flick-web
+    restart: unless-stopped
+    ports:
+      - "${FLICK_WEB_PORT:-8080}:80"
