@@ -195,6 +195,10 @@ class Socket {
       if (frame.type === 'chat_message' && frame.data?.message_id && frame.data.sender_id !== this.userId) {
         this.send({ type: 'ack_delivered', data: { message_id: frame.data.message_id, sender_id: frame.data.sender_id } });
       }
+      // Same for group messages (also while this tab isn't being looked at)
+      if (frame.type === 'group_message' && frame.data?.group_id && frame.data.sender_id !== this.userId) {
+        this.send({ type: 'ack_group_delivered', data: { group_id: frame.data.group_id } });
+      }
       this.emit(frame);
     };
     ws.onclose = (e) => {
@@ -238,7 +242,7 @@ class Socket {
         /* falls through to queue */
       }
     }
-    if (['mark_read', 'ack_delivered', 'call_ice_candidate', 'call_media_state'].includes(frame?.type)) {
+    if (['mark_read', 'ack_delivered', 'ack_group_delivered', 'call_ice_candidate', 'call_media_state'].includes(frame?.type)) {
       if (this.queue.length >= 100) this.queue.shift();
       this.queue.push(frame);
     }
