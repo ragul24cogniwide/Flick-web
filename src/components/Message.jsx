@@ -245,7 +245,7 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
           </div>
         )}
         {msg.replyTo && (
-          <button type="button" className="bubble-reply" onClick={() => msg.replyTo.id && onJump(msg.replyTo.id)}>
+          <button type="button" className="bubble-reply" onClick={() => onJump(msg.replyTo)}>
             <span className="bubble-reply-name">{msg.replyTo.sender || 'Reply'}</span>
             <span className="bubble-reply-text">{String(msg.replyTo.text || '').slice(0, 200)}</span>
           </button>

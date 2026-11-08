@@ -1,7 +1,18 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { startCall } from '../lib/calls';
 import { dayLabel, lastSeenText, sameUser, typingLabel } from '../lib/format';
-import { confirmDialog, deleteMessage, loadHistory, loadOlder, reactToMessage, retryMessage, setArchived, useStore } from '../lib/store';
+import {
+  confirmDialog,
+  deleteMessage,
+  loadHistory,
+  loadOlder,
+  locateQuoted,
+  reactToMessage,
+  retryMessage,
+  setArchived,
+  toast,
+  useStore,
+} from '../lib/store';
 import Composer from './Composer';
 import Icon from './Icon';
 import Message from './Message';
@@ -124,13 +135,25 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
     setNewBelow(0);
   };
 
-  const jumpTo = useCallback((id) => {
-    const node = document.getElementById(`m-${id}`);
-    if (!node) return;
-    node.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setHighlight(id);
-    setTimeout(() => setHighlight(null), 1600);
-  }, []);
+  // Scrolls to a quoted message (loading older pages if needed) and flashes it
+  const jumpTo = useCallback(
+    async (ref) => {
+      const msg = await locateQuoted(chat.id, ref);
+      if (!msg) {
+        toast('That message isn’t available anymore');
+        return;
+      }
+      // Let a page that just arrived render first
+      requestAnimationFrame(() => {
+        const node = document.getElementById(`m-${msg.id}`);
+        if (!node) return;
+        node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlight(msg.id);
+        setTimeout(() => setHighlight(null), 1600);
+      });
+    },
+    [chat.id],
+  );
 
   const askDelete = useCallback(
     (msg) => {

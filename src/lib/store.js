@@ -357,24 +357,59 @@ export async function loadHistory(chatId) {
   });
 }
 
+/** Loads the page before the oldest message shown. Resolves to { more } or null (nothing loaded). */
 export async function loadOlder(chatId) {
   const box = state.messages[chatId];
-  if (!box || box.loadingOlder || !box.hasMore || !box.loaded) return;
+  if (!box || box.loadingOlder || !box.hasMore || !box.loaded) return null;
   setState((s) => ({ messages: { ...s.messages, [chatId]: { ...s.messages[chatId], loadingOlder: true } } }));
-  const offset = box.list.filter((m) => m.status !== 'pending' && m.status !== 'failed').length;
-  const res = await api.getHistory(chatId, offset, HISTORY_PAGE);
+  const sent = box.list.filter((m) => m.status !== 'pending' && m.status !== 'failed');
+  const oldest = sent.reduce((a, m) => (!a || (m.ts || 0) < (a.ts || 0) ? m : a), null);
+  const res = await api.getHistory(chatId, sent.length, HISTORY_PAGE, oldest?.id || null);
+  let more = null;
   setState((s) => {
     const cur = s.messages[chatId];
     if (!cur) return null;
     if (!res.ok) return { messages: { ...s.messages, [chatId]: { ...cur, loadingOlder: false } } };
     const page = (Array.isArray(res.data) ? res.data : []).map((m) => normMessage(m, chatId));
+    more = page.length >= HISTORY_PAGE;
     return {
       messages: {
         ...s.messages,
-        [chatId]: { ...cur, list: mergeInto(cur.list, page), loadingOlder: false, hasMore: page.length >= HISTORY_PAGE },
+        [chatId]: { ...cur, list: mergeInto(cur.list, page), loadingOlder: false, hasMore: more },
       },
     };
   });
+  return more === null ? null : { more };
+}
+
+/**
+ * The message a reply quotes ({ id, text }, or an id) in this chat's loaded messages, or null.
+ * The quote may carry the id the sender's device gave the message while sending (before the
+ * server's id arrived): that matches its clientId. Otherwise the text, when only one message has it.
+ */
+export function findQuoted(chatId, ref) {
+  const list = state.messages[chatId]?.list || [];
+  const quote = ref && typeof ref === 'object' ? ref : { id: ref };
+  const id = quote.id != null ? String(quote.id) : '';
+  if (id) {
+    const hit = list.find((m) => String(m.id) === id || String(m.clientId || '') === id);
+    if (hit) return hit;
+  }
+  const text = String(quote.text || '').trim();
+  if (!text) return null;
+  const same = list.filter((m) => m.kind !== 'system' && String(m.text || '').trim() === text);
+  return same.length === 1 ? same[0] : null;
+}
+
+/** Finds a quoted message, loading older pages (up to 15) when it's older than what's loaded. */
+export async function locateQuoted(chatId, ref) {
+  let hit = findQuoted(chatId, ref);
+  for (let page = 0; !hit && page < 15; page++) {
+    const res = await loadOlder(chatId);
+    hit = findQuoted(chatId, ref);
+    if (!res?.more) break;
+  }
+  return hit;
 }
 
 /** After reconnecting: pick up what arrived meanwhile, and tick changes. */

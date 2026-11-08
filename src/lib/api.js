@@ -76,8 +76,10 @@ export const syncConversations = (cursor) =>
 export const lookupNumbers = (phone_numbers) => request('/api/contacts/sync', { method: 'POST', body: { phone_numbers } });
 // Your phone contacts who are on Flick, as last reported by the phone app (the browser can't read contacts)
 export const contactsOnFlick = () => request('/api/contacts/on-flick');
-export const getHistory = (peerId, offset = 0, limit = 50) =>
-  request(`/api/messages/${enc(peerId)}?limit=${limit}&offset=${offset}`);
+// `before`: the id of the oldest message already loaded; the server answers with the page before it
+// (nothing is skipped when new messages arrive meanwhile). `offset` is for servers without `before`.
+export const getHistory = (peerId, offset = 0, limit = 50, before = null) =>
+  request(`/api/messages/${enc(peerId)}?limit=${limit}&offset=${offset}${before ? `&before=${enc(before)}` : ''}`);
 export const sendMessageRest = (payload) => request('/api/messages/send', { method: 'POST', body: payload });
 export const editMessage = (id, content) => request(`/api/messages/${enc(id)}`, { method: 'PUT', body: { content } });
 export const deleteMessage = (id, forEveryone) =>
