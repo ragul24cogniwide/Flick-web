@@ -207,3 +207,18 @@ export function previewText(msg) {
   if (meta?.type === 'audio') return `🎙️ Voice message${meta.duration ? ` (${meta.duration})` : ''}`;
   return String(msg.text || '').replace(/\s+/g, ' ').trim();
 }
+
+/** 1536 -> "1.5 KB", 2_400_000 -> "2.3 MB" (same as the app) */
+export function formatBytes(bytes) {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(n < 10 * 1024 ? 1 : 0)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** "Report.PDF" -> "PDF"; no extension -> "FILE" */
+export function fileTypeLabel(name) {
+  const m = /\.([A-Za-z0-9]{1,8})$/.exec(String(name || ''));
+  return m ? m[1].toUpperCase() : 'FILE';
+}

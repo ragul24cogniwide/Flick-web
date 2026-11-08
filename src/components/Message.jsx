@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { EMOJI, QUICK_REACTIONS } from '../lib/emoji';
-import { clock, formatDuration, linkParts, mediaUrl, memberColor, sameUser, systemEventText } from '../lib/format';
+import { clock, fileTypeLabel, formatBytes, formatDuration, linkParts, mediaUrl, memberColor, sameUser, systemEventText } from '../lib/format';
 import Icon from './Icon';
 import { Avatar, Menu } from './ui';
 
@@ -210,8 +210,11 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
   const meta = msg.metadata;
   const image = meta?.type === 'image' ? mediaUrl(meta.media_url || meta.uri) : null;
   const isVoice = meta?.type === 'audio';
+  // A shared file (from the phone app): opens / downloads from the server
+  const doc = meta?.type === 'document' ? mediaUrl(meta.media_url || meta.uri) : null;
+  const docName = meta?.file_name || String(msg.text || '').replace(/^📄\s*/, '') || 'Document';
   const caption = image ? meta.caption || (msg.text && !/^📷 Photo$/.test(msg.text) ? msg.text : '') : '';
-  const showText = !image && !isVoice;
+  const showText = !image && !isVoice && !doc;
   const showSender = isGroup && !msg.mine && firstOfRun;
   const nameColor = memberColor(msg.senderId);
   const canEdit = msg.mine && showText && msg.status !== 'pending' && msg.status !== 'failed';
@@ -244,6 +247,11 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
             {msg.senderName || 'Member'}
           </div>
         )}
+        {meta?.forwarded && (
+          <div className="bubble-forwarded">
+            <Icon name="forward" size={13} /> Forwarded
+          </div>
+        )}
         {msg.replyTo && (
           <button type="button" className="bubble-reply" onClick={() => onJump(msg.replyTo)}>
             <span className="bubble-reply-name">{msg.replyTo.sender || 'Reply'}</span>
@@ -256,6 +264,25 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
           </button>
         )}
         {isVoice && <VoiceNote meta={meta} mine={msg.mine} />}
+        {meta?.type === 'document' && (
+          <a
+            className="bubble-doc"
+            href={doc || undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={docName}
+            aria-label={`Document ${docName}. Open`}
+          >
+            <span className="bubble-doc-icon" data-kind={fileTypeLabel(docName)}>
+              <Icon name="file" size={20} />
+            </span>
+            <span className="bubble-doc-text">
+              <span className="bubble-doc-name">{docName}</span>
+              <span className="bubble-doc-meta">{[fileTypeLabel(docName), formatBytes(meta.size)].filter(Boolean).join(' · ')}</span>
+            </span>
+            <Icon name="download" size={18} />
+          </a>
+        )}
         {(showText || caption) && (
           <div className="bubble-text">
             <RichText text={showText ? msg.text : caption} />
@@ -287,6 +314,7 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
               canReact && { label: 'React', icon: 'smile', onClick: () => setReacting(true) },
               (showText || caption) && { label: 'Copy', icon: 'copy', onClick: copy },
               image && { label: 'Open photo', icon: 'image', onClick: () => onOpenImage(image) },
+              doc && { label: 'Download', icon: 'download', onClick: () => window.open(doc, '_blank', 'noopener') },
               canEdit && { label: 'Edit', icon: 'edit', onClick: () => onEdit(msg) },
               { label: 'Delete', icon: 'trash', danger: true, onClick: () => onDelete(msg) },
             ]}
