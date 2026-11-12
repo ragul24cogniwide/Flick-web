@@ -197,7 +197,13 @@ class Socket {
       }
       // Same for group messages (also while this tab isn't being looked at)
       if (frame.type === 'group_message' && frame.data?.group_id && frame.data.sender_id !== this.userId) {
-        this.send({ type: 'ack_group_delivered', data: { group_id: frame.data.group_id } });
+        this.send({ type: 'ack_group_delivered', data: { group_id: frame.data.group_id, message_id: frame.data.message_id } });
+      }
+      // This browser now has the message (received, from a group, or sent from my phone): the
+      // server records it per device (backend devices.py). No ticks change because of this.
+      if (['chat_message', 'group_message', 'message_sent_sync'].includes(frame.type) && frame.data) {
+        const id = String(frame.data.message_id || frame.data.id || '');
+        if (id && !id.startsWith('temp')) this.send({ type: 'device_ack', data: { message_ids: [id] } });
       }
       this.emit(frame);
     };
@@ -242,7 +248,7 @@ class Socket {
         /* falls through to queue */
       }
     }
-    if (['mark_read', 'ack_delivered', 'ack_group_delivered', 'call_ice_candidate', 'call_media_state'].includes(frame?.type)) {
+    if (['mark_read', 'ack_delivered', 'ack_group_delivered', 'device_ack', 'call_ice_candidate', 'call_media_state'].includes(frame?.type)) {
       if (this.queue.length >= 100) this.queue.shift();
       this.queue.push(frame);
     }
