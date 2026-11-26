@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react';
 import * as api from './api';
 import { AGENT_ID, HISTORY_PAGE, MAX_MESSAGE_CHARS } from './config';
 import { isGroupId, previewText, sameUser, toMs } from './format';
-import { LOVE_SIGNALS, isLoveReaction, loveBurst, loveSignalMetadata, loveSignalOf, reactionParticles } from './love';
+import { LOVE_SIGNALS, isLoveReaction, loveBurst, loveSignalMetadata, loveSignalOf, loveSignalText, reactionParticles } from './love';
 import { notifyMessage, notifyReaction, playLoveSound, updateTitle } from './notify';
 import { socket } from './socket';
 
@@ -321,6 +321,20 @@ export function openChat(chatId) {
   else if (chatId !== AGENT_ID) socket.queryPresence(chatId);
 }
 
+/** The chat with this person, added to the list (without opening it) when it isn't there yet. */
+export function ensureChat(person) {
+  const existing = chatIdFor(person.id) || chatIdFor(person.phone_number);
+  if (existing) return existing;
+  const id = String(person.id);
+  setState((s) => ({
+    chats: {
+      ...s.chats,
+      [id]: normChat({ ...person, name: person.name || person.username, last_message: '', time: '', unread: 0 }),
+    },
+  }));
+  return id;
+}
+
 /** Opens a chat with someone who isn't in the list yet (new chat). */
 export function openPerson(person) {
   const id = String(person.id);
@@ -501,13 +515,14 @@ export function sendMessage(chatId, text, { replyTo = null, metadata = null } = 
 
 /** A love signal (1:1 chats): Thinking of you, a hug, a kiss, good morning / night. */
 let loveSentAt = 0;
-export function sendLoveSignal(chatId, id = 'thinking') {
+export function sendLoveSignal(chatId, id = 'thinking', name = null) {
   const signal = LOVE_SIGNALS[id];
   if (!signal) return;
   const now = Date.now();
   if (now - loveSentAt < 3000) return; // one at a time, not a flood
   loveSentAt = now;
-  sendMessage(chatId, signal.text, { metadata: loveSignalMetadata(id) });
+  // My person gets the name I call them ("Good morning, Kutty"); others the plain wording
+  sendMessage(chatId, loveSignalText(id, name), { metadata: loveSignalMetadata(id, name) });
   loveBurst('sent', { signal: id });
 }
 export const sendThinkingOfYou = (chatId) => sendLoveSignal(chatId, 'thinking');

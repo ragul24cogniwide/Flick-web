@@ -7,6 +7,68 @@ import { confirmDialog, loadCalls, openPerson, setState, toast, useStore } from 
 import Icon from '../components/Icon';
 import { Avatar, IconButton, PanelHeader, Spinner } from '../components/ui';
 import { usePeople } from '../lib/people';
+import { partnerFirstName, partnerName, useCouple } from '../lib/couple';
+import { sameUser } from '../lib/format';
+
+const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const talkText = (sec) => {
+  const mins = Math.round(sec / 60);
+  return mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)} h ${mins % 60} min`;
+};
+
+/** My person first: big voice / video buttons and how long we talked each day this week. */
+function PartnerCallCard({ couple, calls, inCall }) {
+  const partner = couple.partner;
+  const week = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).getTime();
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6 + i);
+      return { day: DAY_LETTERS[d.getDay()], seconds: 0, today: i === 6 };
+    });
+    for (const c of calls || []) {
+      if (c.status !== 'completed' || !sameUser(c.peer?.id, partner.id)) continue;
+      const ts = Date.parse(c.started_at);
+      const idx = Math.floor((ts - start) / 86400000);
+      if (idx >= 0 && idx < 7) days[idx].seconds += Number(c.duration) || 0;
+    }
+    return { days, total: days.reduce((n, d) => n + d.seconds, 0) };
+  }, [calls, partner.id]);
+  const max = Math.max(1, ...week.days.map((d) => d.seconds));
+  const person = { id: partner.id, name: partner.name, avatar_url: partner.avatar_url, avatar_color: partner.avatar_color };
+  return (
+    <div className="partner-call">
+      <div className="us-card raised center">
+        <span className="pin-avatar big">
+          <Avatar id={partner.id} name={partner.name} color={partner.avatar_color} url={partner.avatar_url} size={72} />
+        </span>
+        <b className="partner-call-name">{partnerName(couple)}</b>
+        <div className="partner-call-btns">
+          <button type="button" className="btn primary" disabled={inCall} onClick={() => startCall(partner.id, false, person)}>
+            <Icon name="phone" size={16} /> Voice
+          </button>
+          <button type="button" className="btn outline" disabled={inCall} onClick={() => startCall(partner.id, true, person)}>
+            <Icon name="video" size={16} /> Video
+          </button>
+        </div>
+      </div>
+      <div className="us-card blush" aria-label={`This week you talked ${talkText(week.total)} with ${partnerFirstName(couple)}`}>
+        <div className="count-row">
+          <b>This week we talked</b>
+          <span>{talkText(week.total)}</span>
+        </div>
+        <div className="bars" aria-hidden>
+          {week.days.map((d, i) => (
+            <span key={i} className={d.today ? 'today' : ''}>
+              <i style={{ height: `${Math.max(4, Math.round((d.seconds / max) * 52))}px` }} />
+              {d.day}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const LABEL = {
   completed: (c) => (c.direction === 'outgoing' ? 'Outgoing' : 'Incoming'),
@@ -116,6 +178,7 @@ export default function CallsPanel({ onClose }) {
   const inCall = useStore((s) => !!s.call);
   const [filter, setFilter] = useState('all');
   const [picking, setPicking] = useState(false);
+  const couple = useCouple();
 
   useEffect(() => {
     loadCalls();
@@ -164,6 +227,7 @@ export default function CallsPanel({ onClose }) {
         ))}
       </div>
       <div className="calls-list">
+        {filter === 'all' && couple?.status === 'paired' && couple.partner && <PartnerCallCard couple={couple} calls={calls} inCall={inCall} />}
         {calls === null ? (
           <div className="list-empty">
             <Spinner />

@@ -20,7 +20,7 @@ function RailButton({ icon, label, active, badge, onClick }) {
 }
 
 /**
- * The bar on the far left (bottom on small screens): switch between Chats, Status and Calls,
+ * The bar on the far left (bottom on small screens): switch between Us, Chats, Moments, Status and Calls,
  * start a new group, open Settings.
  */
 export default function NavRail({ section, onSection, onNewGroup }) {
@@ -36,7 +36,9 @@ export default function NavRail({ section, onSection, onNewGroup }) {
   return (
     <nav className="rail" aria-label="Main">
       <div className="rail-group">
+        <RailButton icon="heart" label="Us" active={section === 'us'} onClick={() => onSection('us')} />
         <RailButton icon="chat" label="Chats" active={section === 'chats'} badge={unreadChats} onClick={() => onSection('chats')} />
+        <RailButton icon="image" label="Moments" active={section === 'moments'} onClick={() => onSection('moments')} />
         <RailButton icon="status" label="Status" active={section === 'status'} onClick={() => onSection('status')} />
         <RailButton icon="phone" label="Calls" active={section === 'calls'} badge={missedCalls} onClick={() => onSection('calls')} />
         <RailButton icon="groupAdd" label="New group" onClick={onNewGroup} />

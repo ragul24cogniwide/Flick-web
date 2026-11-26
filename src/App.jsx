@@ -17,6 +17,9 @@ import InfoPanel from './panels/InfoPanel';
 import { NewChatPanel, NewGroupPanel } from './panels/NewChat';
 import { ProfilePanel, SettingsPanel } from './panels/Settings';
 import StatusPanel from './panels/Status';
+import UsPanel from './panels/Us';
+import MomentsPanel from './panels/Moments';
+import { startCouple, stopCouple } from './lib/couple';
 
 loadSession();
 const subscribeSession = (fn) => onSessionChange(fn);
@@ -25,13 +28,14 @@ function Workspace() {
   const activeId = useStore((s) => s.activeId);
   const chat = useStore((s) => (s.activeId ? s.chats[s.activeId] : null));
   const me = useStore((s) => s.me);
-  const [section, setSection] = useState('chats'); // left column: chats | status | calls | settings
+  // left column: us (Flick for lovers home) | chats | moments | status | calls | settings
+  const [section, setSection] = useState('us');
   const [panel, setPanel] = useState(null); // slides over it: profile | newChat | newGroup
   const [infoOpen, setInfoOpen] = useState(false);
 
   // Status, Calls and Settings are sections (switched from the left bar); the rest slide over
   const open = useCallback((name) => {
-    if (['chats', 'status', 'calls', 'settings'].includes(name)) {
+    if (['us', 'chats', 'moments', 'status', 'calls', 'settings'].includes(name)) {
       setSection(name);
       setPanel(null);
     } else setPanel(name);
@@ -84,6 +88,8 @@ function Workspace() {
     newGroup: <NewGroupPanel onClose={close} />,
   };
   const sections = {
+    us: <UsPanel />,
+    moments: <MomentsPanel onClose={toChats} onStatus={() => setSection('status')} />,
     status: <StatusPanel onClose={toChats} />,
     calls: <CallsPanel onClose={toChats} />,
     settings: <SettingsPanel onClose={toChats} onLogout={logout} />,
@@ -130,9 +136,12 @@ export default function App() {
     const user = getSession()?.user;
     if (!token || !user?.id) return undefined;
     const offCalls = socket.on(handleCallFrame);
-    startApp(user);
+    let alive = true;
+    startApp(user).then(() => alive && startCouple());
     return () => {
+      alive = false;
       offCalls();
+      stopCouple();
       stopApp();
     };
   }, [token]);

@@ -8,7 +8,7 @@ import { getState, setState, toast, useStore } from '../lib/store';
 import Icon from '../components/Icon';
 import { Avatar, IconButton, PanelHeader, Spinner, Toggle } from '../components/ui';
 
-const COLORS = ['#FFB800', '#3B82F6', '#10B981', '#8B5CF6', '#F97316', '#EC4899', '#14B8A6', '#EF4444'];
+const COLORS = ['#E11D48', '#FFB800', '#3B82F6', '#10B981', '#8B5CF6', '#F97316', '#EC4899', '#14B8A6', '#EF4444'];
 
 function EditableRow({ label, value, maxLength, onSave, multiline }) {
   const [editing, setEditing] = useState(false);
@@ -159,9 +159,9 @@ export function SettingsPanel({ onClose, onLogout }) {
         </h3>
         <div className="segmented" role="radiogroup" aria-label="Theme">
           {[
-            ['system', 'System'],
-            ['light', 'Light'],
-            ['dark', 'Dark'],
+            ['system', 'Match device'],
+            ['light', 'Blush'],
+            ['dark', 'Midnight love'],
           ].map(([k, label]) => (
             <button key={k} type="button" role="radio" aria-checked={ui.theme === k} className={ui.theme === k ? 'on' : ''} onClick={() => setUi({ theme: k })}>
               {label}

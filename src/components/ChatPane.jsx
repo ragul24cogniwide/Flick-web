@@ -15,6 +15,8 @@ import {
   useStore,
 } from '../lib/store';
 import { LOVE_SIGNALS, LOVE_SIGNAL_ORDER, chatTheme } from '../lib/love';
+import { loveNameFor, useCouple } from '../lib/couple';
+import { LogoTile } from './Logo';
 import { useUi } from '../lib/notify';
 import Composer from './Composer';
 import Icon from './Icon';
@@ -171,7 +173,12 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
   );
 
   const onRetry = useCallback((msg) => retryMessage(chat.id, msg.id), [chat.id]);
-  const onSendLove = useCallback((id) => sendLoveSignal(chat.id, id || 'thinking'), [chat.id]);
+  // My person gets the name I call them ("Good morning, Kutty"); anyone else the plain wording
+  const couple = useCouple();
+  const isMyPerson =
+    couple?.status === 'paired' && !isGroup && (sameUser(chat.id, couple.partner?.id) || sameUser(chat.phone, couple.partner?.phone_number));
+  const loveName = isMyPerson ? loveNameFor(couple) : null;
+  const onSendLove = useCallback((id) => sendLoveSignal(chat.id, id || 'thinking', loveName), [chat.id, loveName]);
   const [loveMenu, setLoveMenu] = useState(false);
   const loveBtn = useRef(null);
   const ui = useUi();
@@ -401,10 +408,10 @@ export function EmptyPane() {
     <section className="chat-pane empty-pane">
       <div className="empty-pane-inner">
         <div className="empty-pane-art" aria-hidden>
-          <Icon name="monitor" size={64} stroke={1.4} />
+          <LogoTile size={88} />
         </div>
-        <h1>Flick Web</h1>
-        <p>Send and receive messages from your computer. Your phone and this browser stay in sync.</p>
+        <h1>Flick, for two hearts</h1>
+        <p>Your love notes, chats and moments, now on your computer too. Your phone and this browser stay in sync.</p>
         <p className="muted">
           <Icon name="lock" size={13} /> Log out of this browser any time from your phone: ⋮ → Linked devices.
         </p>

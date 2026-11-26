@@ -1,5 +1,7 @@
 import { Fragment, memo, useMemo, useRef, useState } from 'react';
-import { listTime, toMs, typingLabel } from '../lib/format';
+import { listTime, sameUser, toMs, typingLabel } from '../lib/format';
+import { partnerChatId, partnerName, useCouple } from '../lib/couple';
+import { useUi } from '../lib/notify';
 import { openChat, setArchived, useStore } from '../lib/store';
 import Icon from './Icon';
 import { Avatar, IconButton, Menu } from './ui';
@@ -84,6 +86,37 @@ const ChatRow = memo(function ChatRow({ chat, active, typers }) {
   );
 });
 
+/** My person, pinned above every other chat (Flick for lovers). */
+function PartnerPin({ couple, chat, active, typers }) {
+  const ui = useUi();
+  const partner = couple.partner || {};
+  const typing = typers?.length > 0;
+  const unread = chat?.unread || 0;
+  return (
+    <button type="button" className={`partner-pin${active ? ' active' : ''}`} onClick={() => openChat(chat?.id || partnerChatId(couple))} aria-label={`Open chat with ${partnerName(couple)}${unread ? `, ${unread} unread` : ''}`}>
+      <span className="pin-avatar">
+        <Avatar id={partner.id} name={partner.name} color={partner.avatar_color} url={partner.avatar_url} size={56} />
+        <span className="pin-heart" aria-hidden>
+          ♥
+        </span>
+      </span>
+      <span className="pin-body">
+        <span className="pin-top">
+          <b>{partnerName(couple)}</b>
+          {chat?.time && <small>{listTime(chat.time)}</small>}
+        </span>
+        <span className={`pin-last${typing ? ' typing' : ''}`}>
+          {typing ? (ui.letterTicks ? '✉️ writing you a letter…' : 'typing…') : chat?.last_message || 'Say something sweet 💕'}
+        </span>
+        <span className="pin-top">
+          <small>{chat?.online ? 'Your person · online' : 'Your person · pinned'}</small>
+          {unread > 0 && <span className="unread-badge">{unread > 99 ? '99+' : unread}</span>}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 export default function Sidebar({ onPanel, onLogout }) {
   const me = useStore((s) => s.me);
   const chats = useStore((s) => s.chats);
@@ -97,6 +130,11 @@ export default function Sidebar({ onPanel, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const menuBtn = useRef(null);
+  const couple = useCouple();
+  const partner = couple?.status === 'paired' ? couple.partner : null;
+  const isPartner = (c) => !!partner && !c.is_group && (sameUser(c.id, partner.id) || sameUser(c.phone, partner.phone_number));
+  const partnerRow = partner ? Object.values(chats).find(isPartner) || null : null;
+  const showPin = !!partner && !query.trim() && filter === 'all' && !showArchived;
 
   const archived = useMemo(() => {
     const all = Object.values(chats).filter((c) => c.archived);
@@ -110,6 +148,7 @@ export default function Sidebar({ onPanel, onLogout }) {
       .filter((c) => {
         // Search looks through archived chats too; otherwise each view shows its own chats
         if (!q && !!c.archived !== inArchive) return false;
+        if (showPin && isPartner(c)) return false; // pinned above
         if (filter === 'unread' && !c.unread) return false;
         if (filter === 'groups' && !c.is_group) return false;
         if (!q) return true;
@@ -117,7 +156,8 @@ export default function Sidebar({ onPanel, onLogout }) {
       })
       // Flick AI Agent always first, then the newest conversation
       .sort((a, b) => b.isAgent - a.isAgent || (b.time ? toMs(b.time) : 0) - (a.time ? toMs(a.time) : 0));
-  }, [chats, query, filter, inArchive]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chats, query, filter, inArchive, showPin, partner?.id]);
 
   const archivedRow = !inArchive && !query && filter === 'all' && archived.count > 0 && (
     <button type="button" className="archived-row" onClick={() => setShowArchived(true)}>
@@ -190,6 +230,7 @@ export default function Sidebar({ onPanel, onLogout }) {
       </div>
 
       <div className="chat-list">
+        {ready && showPin && <PartnerPin couple={couple} chat={partnerRow} active={!!partnerRow && partnerRow.id === activeId} typers={partnerRow ? typing[partnerRow.id] : null} />}
         {!ready ? (
           <div aria-label="Loading chats">
             {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -206,7 +247,7 @@ export default function Sidebar({ onPanel, onLogout }) {
           <div className="list-empty">
             <p>{syncError}</p>
           </div>
-        ) : !list.length && !(archived.count && !inArchive && !query) ? (
+        ) : !list.length && !showPin && !(archived.count && !inArchive && !query) ? (
           <div className="list-empty">
             <p>{query ? `No chats match “${query}”.` : filter === 'unread' ? 'No unread chats.' : filter === 'groups' ? 'No groups yet.' : 'No chats yet.'}</p>
             {!query && filter !== 'unread' && (

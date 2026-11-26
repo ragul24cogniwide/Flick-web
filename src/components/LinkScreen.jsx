@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { pollLink, startLink } from '../lib/api';
 import { saveSession } from '../lib/session';
 import Icon from './Icon';
+import { LogoTile } from './Logo';
 import { Spinner } from './ui';
 
 const POLL_MS = 2000;
@@ -88,14 +89,13 @@ export default function LinkScreen() {
   return (
     <div className="link-page">
       <header className="link-top">
-        <span className="brand-mark" aria-hidden>
-          F
-        </span>
+        <LogoTile size={38} className="brand-logo" />
         <span className="brand-name">Flick Web</span>
       </header>
       <main className="link-card">
         <div className="link-steps">
           <h1>Use Flick on your computer</h1>
+          <p className="link-tagline">Your love notes and chats, on the big screen too 💕</p>
           <ol>
             <li>
               Open <b>Flick</b> on your phone

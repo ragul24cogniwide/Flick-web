@@ -1,10 +1,11 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { EMOJI, QUICK_REACTIONS } from '../lib/emoji';
 import { clock, fileTypeLabel, formatBytes, formatDuration, linkParts, mediaUrl, memberColor, sameUser, systemEventText } from '../lib/format';
-import { CHAT_THEME, PHOTO_STYLE_POLAROID, chatThemeNotice, loveSignalOf } from '../lib/love';
+import { CHAT_THEME, PHOTO_STYLE_POLAROID, chatThemeNotice, loveSignalOf, loveSignalTitle } from '../lib/love';
+import { OPEN_WHEN } from '../lib/loveContent';
 import { useUi } from '../lib/notify';
 import Icon from './Icon';
-import { Avatar, Menu } from './ui';
+import { Avatar, Menu, Modal } from './ui';
 
 /* ---------------- text: links + light formatting ---------------- */
 
@@ -239,6 +240,31 @@ function ReactionChips({ reactions, myId, nameOf, onReact }) {
 
 /* ---------------- one message ---------------- */
 
+/** An "open when" letter: a sealed envelope; clicking opens it. */
+function LetterCard({ letter, mine, fallback }) {
+  const [open, setOpen] = useState(false);
+  const title = letter.title || 'you need it';
+  return (
+    <>
+      <button type="button" className="letter-msg" onClick={() => setOpen(true)} aria-label={`${mine ? 'Your letter' : 'A letter for you'}: open when ${title}`}>
+        <svg width="58" height="42" viewBox="0 0 58 42" aria-hidden="true">
+          <rect x="1" y="1" width="56" height="40" rx="7" fill="var(--surface)" stroke="var(--brand)" strokeWidth="1.6" />
+          <path d="M2 3 L29 23 L56 3" fill="var(--brand-soft)" stroke="var(--brand)" strokeWidth="1.6" strokeLinejoin="round" />
+          <path d="M29 30s-5.6-3.5-7.2-7c-1.1-2.5.5-5.3 3.2-5.3 1.6 0 2.9.9 4 2.3 1.1-1.4 2.4-2.3 4-2.3 2.7 0 4.3 2.8 3.2 5.3C34.6 26.5 29 30 29 30z" fill="var(--brand)" />
+        </svg>
+        <span className="letter-msg-kicker">{mine ? 'Your letter' : 'A letter for you'}</span>
+        <span className="letter-msg-title">Open when {title}</span>
+        <span className="letter-msg-btn">{mine ? 'Read it again' : 'Open 💌'}</span>
+      </button>
+      {open && (
+        <Modal title={`Open when ${title}`} onClose={() => setOpen(false)} className="letter-modal">
+          <p className="letter-body">{letter.letter || fallback}</p>
+        </Modal>
+      )}
+    </>
+  );
+}
+
 function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, onRetry, onOpenImage, onJump, onReact, onSendLove, nameOf, reactionsOn = true, highlighted, animate }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reacting, setReacting] = useState(false);
@@ -262,7 +288,9 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
     );
   }
   const love = loveSignalOf(meta);
-  const isLove = !!love;
+  const letter = meta?.type === OPEN_WHEN ? meta : null;
+  const isLove = !!love || !!letter;
+  const loveTitle = love ? loveSignalTitle(love, meta) : '';
   const image = meta?.type === 'image' ? mediaUrl(meta.media_url || meta.uri) : null;
   const isVoice = meta?.type === 'audio';
   // A shared file (from the phone app): opens / downloads from the server
@@ -328,10 +356,11 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
             <img src={image} alt={caption || 'Photo'} loading="lazy" referrerPolicy="no-referrer" />
           </button>
         )}
-        {isLove && (
-          <div className="love-msg" aria-label={msg.mine ? `You sent: ${love.title}` : love.title}>
+        {letter && <LetterCard letter={letter} mine={msg.mine} fallback={msg.text} />}
+        {love && (
+          <div className="love-msg" aria-label={msg.mine ? `You sent: ${loveTitle}` : loveTitle}>
             <span className="love-msg-emoji">{love.emoji}</span>
-            <span className="love-msg-title">{love.title}</span>
+            <span className="love-msg-title">{loveTitle}</span>
             {!msg.mine && onSendLove && (
               <button type="button" className="love-back" onClick={() => onSendLove(love.id)}>
                 {love.back}
