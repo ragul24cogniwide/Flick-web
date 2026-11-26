@@ -89,7 +89,8 @@ export const contactsOnFlick = () => request('/api/contacts/on-flick');
 // (nothing is skipped when new messages arrive meanwhile). `offset` is for servers without `before`.
 export const getHistory = (peerId, offset = 0, limit = 50, before = null) =>
   request(`/api/messages/${enc(peerId)}?limit=${limit}&offset=${offset}${before ? `&before=${enc(before)}` : ''}`);
-export const sendMessageRest = (payload) => request('/api/messages/send', { method: 'POST', body: payload, timeout: 30000 });
+// A text message is tiny: no answer in 15 s means the request is stuck, so it is tried again
+export const sendMessageRest = (payload) => request('/api/messages/send', { method: 'POST', body: payload, timeout: 15000 });
 export const editMessage = (id, content) => request(`/api/messages/${enc(id)}`, { method: 'PUT', body: { content } });
 export const deleteMessage = (id, forEveryone) =>
   request(`/api/messages/${enc(id)}?for_everyone=${forEveryone ? 'true' : 'false'}`, { method: 'DELETE' });

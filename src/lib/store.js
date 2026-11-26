@@ -467,11 +467,21 @@ export function markChatRead(chatId) {
 const ackTimers = new Map();
 // Messages waiting to be tried again over HTTP after a network failure: clientId -> { timer, tries }
 const httpRetries = new Map();
-const HTTP_RETRY_MIN_MS = 2000;
-const HTTP_RETRY_MAX_MS = 30000;
-// Wait for the socket's confirmation before also sending over HTTP: longer on a slow network,
-// so a 2G connection isn't sent every message twice
-const ackWaitMs = () => Math.min(20000, Math.max(8000, 5000 + 4 * socket.getRoundTripMs()));
+// Weak signal (a theatre): retry soon and often (1, 2, 4, 8, then every 10 s); messages are tiny
+const HTTP_RETRY_MIN_MS = 1000;
+const HTTP_RETRY_MAX_MS = 10000;
+// The socket gets a moment alone (usually confirmed well under a second); not confirmed by then,
+// the message ALSO goes over HTTPS and whichever answers first wins (the server keeps one copy)
+const ackWaitMs = () => Math.min(6000, Math.max(2500, 2000 + 2 * socket.getRoundTripMs()));
+// Anything arriving on the socket means the network works right now: send what's waiting
+let wokeAt = 0;
+function wakePending() {
+  if (!httpRetries.size) return;
+  const now = Date.now();
+  if (now - wokeAt < 1500) return;
+  wokeAt = now;
+  resendPending();
+}
 // Worth trying again later: no connection / timed out (0), too many requests, server trouble
 const retryable = (status) => status === 0 || status === 408 || status === 429 || status >= 500;
 
@@ -803,6 +813,7 @@ function incoming(chatId, msg, preview) {
 }
 
 function handleFrame({ type, data }) {
+  if (type !== 'connection_status') wakePending();
   switch (type) {
     case 'connection_status':
       setState({ connected: !!data?.connected });
