@@ -49,16 +49,22 @@ function EmojiPicker({ onPick, onClose }) {
 function PhotoSend({ prepared, onCancel, onSend }) {
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
+  // Send it as a polaroid: white frame, handwritten caption, heart sticker
+  const [polaroid, setPolaroid] = useState(false);
   const send = async () => {
     setBusy(true);
-    await onSend(caption.trim());
+    await onSend(caption.trim(), { polaroid });
     setBusy(false);
   };
   return (
     <Modal title="Send photo" onClose={busy ? undefined : onCancel} width={520} className="photo-modal">
-      <div className="photo-preview">
+      <div className={`photo-preview${polaroid ? ' as-polaroid' : ''}`}>
         <img src={prepared.preview} alt="Selected" />
       </div>
+      <label className="polaroid-switch">
+        <input type="checkbox" checked={polaroid} onChange={(e) => setPolaroid(e.target.checked)} />
+        <span>Send as a polaroid 💌</span>
+      </label>
       <input
         className="text-input"
         placeholder="Add a caption"
@@ -189,10 +195,12 @@ export default function Composer({ chat, replyTo, editing, onClearReply, onClear
     }
   };
 
-  const sendPhoto = async (caption) => {
+  const sendPhoto = async (caption, { polaroid = false } = {}) => {
     try {
       const url = await uploadPhoto(photo);
-      sendMessage(chatId, caption || '📷 Photo', { metadata: { type: 'image', media_url: url, caption } });
+      sendMessage(chatId, caption || '📷 Photo', {
+        metadata: { type: 'image', media_url: url, caption, ...(polaroid ? { style: 'polaroid' } : {}) },
+      });
       URL.revokeObjectURL(photo.preview);
       setPhoto(null);
     } catch (e) {

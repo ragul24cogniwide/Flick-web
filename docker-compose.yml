@@ -19,7 +19,7 @@ services:
       context: .
       args:
         # The address your BROWSER uses to reach the backend
-        VITE_FLICK_API: ${FLICK_WEB_API:-https://pocket-backend-7lmx.onrender.com}
+        VITE_FLICK_API: ${FLICK_WEB_API:-https://pocket-backend-production-0fa43272.up.railway.app}
     image: flick-web
     restart: unless-stopped
     ports:

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import ChatPane, { EmptyPane } from './components/ChatPane';
 import CallScreen from './components/CallScreen';
 import LinkScreen from './components/LinkScreen';
+import LoveBurst from './components/LoveBurst';
 import NavRail from './components/NavRail';
 import Sidebar from './components/Sidebar';
 import { DialogHost, Toasts } from './components/ui';
@@ -140,6 +141,7 @@ export default function App() {
     <>
       {session ? <Workspace /> : <LinkScreen />}
       <CallScreen />
+      {session && <LoveBurst />}
       <DialogHost />
       <Toasts />
     </>

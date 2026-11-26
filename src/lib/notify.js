@@ -6,7 +6,8 @@ import { useSyncExternalStore } from 'react';
 import { previewText } from './format';
 
 const UI_KEY = 'flick.web.ui';
-const DEFAULT_UI = { theme: 'system', enterToSend: true, notifications: true, sounds: true, notificationPreview: true };
+// letterTicks: love letters instead of ticks (closed = sent, sealed with a heart = delivered, opened = seen)
+const DEFAULT_UI = { theme: 'system', enterToSend: true, notifications: true, sounds: true, notificationPreview: true, letterTicks: true, loveSounds: true };
 
 let ui = (() => {
   try {
@@ -90,6 +91,21 @@ export function playMessageSound() {
   tone(1320, 0.09, 0.16);
 }
 
+/** Hugs, kisses, "Thinking of you", love reactions: a soft heartbeat, then a two-note chime. */
+export function playLoveSound() {
+  if (!ui.sounds || ui.loveSounds === false) return;
+  tone(160, 0, 0.16, 0.12);
+  tone(320, 0, 0.12, 0.04);
+  tone(160, 0.17, 0.16, 0.09);
+  tone(1046.5, 0.36, 0.55, 0.05);
+  tone(1568, 0.5, 0.45, 0.04);
+}
+
+const isLoveMessage = (msg) => {
+  const type = msg?.metadata?.type;
+  return type === 'thinking_of_you' || type === 'love_signal';
+};
+
 let ringTimer = null;
 /** Incoming call ring (repeats) or the caller's ringback tone. */
 export function startRing(incoming) {
@@ -132,7 +148,8 @@ export function showNotification(title, body, { tag, onClick, requireInteraction
 
 export function notifyMessage(chat, msg, prefs = {}) {
   if (prefs.msg_notifications === false) return;
-  playMessageSound();
+  if (isLoveMessage(msg)) playLoveSound();
+  else playMessageSound();
   if (!pageHidden() || !chat) return;
   const preview = ui.notificationPreview && prefs.preview !== false;
   const body = preview

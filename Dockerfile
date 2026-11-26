@@ -15,7 +15,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 COPY . .
-ARG VITE_FLICK_API=https://pocket-backend-7lmx.onrender.com
+ARG VITE_FLICK_API=https://pocket-backend-production-0fa43272.up.railway.app
 ENV VITE_FLICK_API=${VITE_FLICK_API}
 RUN npm run build
 

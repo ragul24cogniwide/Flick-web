@@ -13,7 +13,13 @@ import { WS_BASE } from './config';
 import { clearSession, getSession } from './session';
 
 const PING_MS = 10000;
-const DEAD_AFTER_MS = 30000;
+// Nothing received for this long = the connection is dead. Grows with the measured ping round
+// trip, so a slow but working connection isn't dropped and redialled (see deadAfterMs).
+const DEAD_AFTER_MIN_MS = 30000;
+const DEAD_AFTER_MAX_MS = 45000;
+// Back to the tab / network back while the socket looks open: a ping must come back this soon
+const PROBE_MIN_MS = 5000;
+const PROBE_MAX_MS = 12000;
 const RECONNECT_MIN = 1000;
 const RECONNECT_MAX = 20000;
 const TYPING_THROTTLE_MS = 2000;
@@ -38,6 +44,11 @@ class Socket {
     this.lastInputAt = Date.now();
     this.presenceSent = null; // what this connection last told the server: true (in use) / false (away)
     this.awayTimer = null;
+    this.pingSentAt = 0;
+    this.rttMs = 0; // smoothed ping round trip, to size timeouts to this network
+    this.framesReceived = 0;
+    this.probeTimer = null;
+    this.hiddenAt = 0;
 
     if (typeof window !== 'undefined') {
       const wake = () => {
@@ -45,14 +56,24 @@ class Socket {
         if (!this.isOpen()) this.reconnectNow();
         else this.reportPresence();
       };
-      window.addEventListener('online', wake);
+      window.addEventListener('online', () => {
+        wake();
+        this.probe(); // the network changed: make sure the open socket still works
+      });
       window.addEventListener('focus', () => {
         this.lastInputAt = Date.now();
         wake();
       });
       window.addEventListener('blur', () => this.reportPresence());
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') this.lastInputAt = Date.now();
+        if (document.visibilityState === 'visible') {
+          this.lastInputAt = Date.now();
+          // Back after a while (laptop lid, another tab): check the socket really still works
+          if (this.hiddenAt && Date.now() - this.hiddenAt > 10000) this.probe();
+          this.hiddenAt = 0;
+        } else {
+          this.hiddenAt = Date.now();
+        }
         wake();
       });
       const onInput = () => {
@@ -103,6 +124,7 @@ class Socket {
   stop() {
     this.stopped = true;
     this.queue = [];
+    this.clearProbe();
     clearTimeout(this.retryTimer);
     clearInterval(this.pingTimer);
     clearTimeout(this.awayTimer);
@@ -171,6 +193,7 @@ class Socket {
       if (this.ws !== ws) return;
       this.delay = RECONNECT_MIN;
       this.lastFrameAt = Date.now();
+      this.pingSentAt = 0;
       // Say straight away whether this tab is in use (a background tab reconnecting stays away)
       clearTimeout(this.awayTimer);
       this.awayTimer = null;
@@ -184,6 +207,7 @@ class Socket {
     ws.onmessage = (e) => {
       if (this.ws !== ws) return;
       this.lastFrameAt = Date.now();
+      this.framesReceived += 1;
       let frame;
       try {
         frame = JSON.parse(e.data);
@@ -191,6 +215,7 @@ class Socket {
         return;
       }
       if (!frame || typeof frame.type !== 'string') return;
+      if (frame.type === 'pong') this.recordRoundTrip();
       // Double grey tick for the sender as soon as it reaches this browser
       if (frame.type === 'chat_message' && frame.data?.message_id && frame.data.sender_id !== this.userId) {
         this.send({ type: 'ack_delivered', data: { message_id: frame.data.message_id, sender_id: frame.data.sender_id } });
@@ -227,15 +252,62 @@ class Socket {
 
   heartbeat() {
     if (!this.isOpen()) return;
-    if (Date.now() - this.lastFrameAt > DEAD_AFTER_MS) {
+    if (Date.now() - this.lastFrameAt > this.deadAfterMs()) {
       // Looks open but nothing comes back (sleeping laptop, switched network): dial again
-      this.drop();
-      this.setConnected(false);
-      this.reconnectNow();
+      this.redial();
       return;
     }
-    this.send({ type: 'ping' });
+    this.sendPing();
     this.reportPresence(); // notices going idle (no input for a while) with the tab still in front
+  }
+
+  redial() {
+    this.clearProbe();
+    this.pingSentAt = 0;
+    this.drop();
+    this.setConnected(false);
+    this.reconnectNow();
+  }
+
+  sendPing() {
+    const now = Date.now();
+    // Time the oldest unanswered ping; one whose pong got lost stops counting after 30 s
+    if (this.send({ type: 'ping' }) && (!this.pingSentAt || now - this.pingSentAt > 30000)) this.pingSentAt = now;
+  }
+
+  recordRoundTrip() {
+    if (!this.pingSentAt) return;
+    const sample = Date.now() - this.pingSentAt;
+    this.pingSentAt = 0;
+    if (sample < 0 || sample > 60000) return;
+    this.rttMs = this.rttMs ? Math.round(this.rttMs * 0.75 + sample * 0.25) : sample;
+  }
+
+  /** Smoothed ping round trip in ms (0 until measured). */
+  getRoundTripMs() {
+    return this.rttMs;
+  }
+
+  deadAfterMs() {
+    return Math.min(DEAD_AFTER_MAX_MS, Math.max(DEAD_AFTER_MIN_MS, 20000 + 5 * this.rttMs));
+  }
+
+  /** Quick check that a socket which looks open still answers; if not, dial again right away. */
+  probe() {
+    if (this.stopped || !this.isOpen() || this.probeTimer) return;
+    const before = this.framesReceived;
+    this.pingSentAt = 0;
+    this.sendPing();
+    const wait = Math.min(PROBE_MAX_MS, Math.max(PROBE_MIN_MS, 4000 + 3 * this.rttMs));
+    this.probeTimer = setTimeout(() => {
+      this.probeTimer = null;
+      if (!this.stopped && this.isOpen() && this.framesReceived === before) this.redial();
+    }, wait);
+  }
+
+  clearProbe() {
+    clearTimeout(this.probeTimer);
+    this.probeTimer = null;
   }
 
   /** Sends now, or keeps receipts / call signals for when the connection is back. */

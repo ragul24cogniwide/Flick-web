@@ -7,7 +7,8 @@ import { useSyncExternalStore } from 'react';
 import * as api from './api';
 import { AGENT_ID, HISTORY_PAGE, MAX_MESSAGE_CHARS } from './config';
 import { isGroupId, previewText, sameUser, toMs } from './format';
-import { notifyMessage, notifyReaction, updateTitle } from './notify';
+import { LOVE_SIGNALS, isLoveReaction, loveBurst, loveSignalMetadata, loveSignalOf, reactionParticles } from './love';
+import { notifyMessage, notifyReaction, playLoveSound, updateTitle } from './notify';
 import { socket } from './socket';
 
 const initial = {
@@ -447,6 +448,21 @@ export function markChatRead(chatId) {
 /* ------------------------------------------------------------------ */
 
 const ackTimers = new Map();
+// Messages waiting to be tried again over HTTP after a network failure: clientId -> { timer, tries }
+const httpRetries = new Map();
+const HTTP_RETRY_MIN_MS = 2000;
+const HTTP_RETRY_MAX_MS = 30000;
+// Wait for the socket's confirmation before also sending over HTTP: longer on a slow network,
+// so a 2G connection isn't sent every message twice
+const ackWaitMs = () => Math.min(20000, Math.max(8000, 5000 + 4 * socket.getRoundTripMs()));
+// Worth trying again later: no connection / timed out (0), too many requests, server trouble
+const retryable = (status) => status === 0 || status === 408 || status === 429 || status >= 500;
+
+function clearHttpRetry(clientId) {
+  const r = httpRetries.get(clientId);
+  if (r) clearTimeout(r.timer);
+  httpRetries.delete(clientId);
+}
 const newTempId = () => `web_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 
 export function sendMessage(chatId, text, { replyTo = null, metadata = null } = {}) {
@@ -483,15 +499,31 @@ export function sendMessage(chatId, text, { replyTo = null, metadata = null } = 
   transmit(chatId, msg);
 }
 
+/** A love signal (1:1 chats): Thinking of you, a hug, a kiss, good morning / night. */
+let loveSentAt = 0;
+export function sendLoveSignal(chatId, id = 'thinking') {
+  const signal = LOVE_SIGNALS[id];
+  if (!signal) return;
+  const now = Date.now();
+  if (now - loveSentAt < 3000) return; // one at a time, not a flood
+  loveSentAt = now;
+  sendMessage(chatId, signal.text, { metadata: loveSignalMetadata(id) });
+  loveBurst('sent', { signal: id });
+}
+export const sendThinkingOfYou = (chatId) => sendLoveSignal(chatId, 'thinking');
+
 function transmit(chatId, msg) {
+  // A newer attempt replaces a scheduled retry (the reconnect resends everything pending)
+  const r = httpRetries.get(msg.clientId);
+  if (r) clearTimeout(r.timer);
   const payload = { receiverId: chatId, content: msg.text, tempId: msg.clientId, replyTo: msg.replyTo, metadata: msg.metadata };
   if (socket.sendMessage(payload)) {
-    // No confirmation over the socket within 8 s: send the same message over HTTP (the server
+    // No confirmation over the socket in time: send the same message over HTTP (the server
     // recognises the id, so it's never stored twice)
     clearTimeout(ackTimers.get(msg.clientId));
     ackTimers.set(
       msg.clientId,
-      setTimeout(() => sendOverHttp(chatId, msg), 8000),
+      setTimeout(() => sendOverHttp(chatId, msg), ackWaitMs()),
     );
   } else {
     sendOverHttp(chatId, msg);
@@ -510,10 +542,25 @@ async function sendOverHttp(chatId, msg) {
     metadata: msg.metadata || null,
   });
   if (res.ok) {
+    clearHttpRetry(msg.clientId);
     applyAck({ temp_msg_id: msg.clientId, message_id: res.data.message_id, timestamp: res.data.timestamp, status: res.data.status });
+  } else if (retryable(res.status)) {
+    // Bad or no connection: the message stays "pending" (clock) and is tried again by itself,
+    // sooner when the connection comes back (resendPending), like the phone app's outbox
+    const tries = (httpRetries.get(msg.clientId)?.tries || 0) + 1;
+    const wait = Math.min(HTTP_RETRY_MAX_MS, HTTP_RETRY_MIN_MS * 2 ** Math.min(tries - 1, 4));
+    clearHttpRetry(msg.clientId);
+    httpRetries.set(msg.clientId, {
+      tries,
+      timer: setTimeout(() => {
+        const again = findMessage(msg.clientId);
+        if (again && again.m.status === 'pending') transmit(chatId, again.m);
+      }, wait),
+    });
   } else {
+    clearHttpRetry(msg.clientId);
     updateMessages(chatId, (list) => list.map((m) => (m.clientId === msg.clientId ? { ...m, status: 'failed', error: res.error } : m)));
-    if (res.status && res.status !== 0) toast(res.error, 'error');
+    toast(res.error, 'error');
   }
 }
 
@@ -534,6 +581,7 @@ function applyAck(data) {
   const temp = String(data.temp_msg_id || data.temp_id || '');
   clearTimeout(ackTimers.get(temp));
   ackTimers.delete(temp);
+  clearHttpRetry(temp);
   const realId = String(data.message_id || '');
   const hit = (temp && findMessage(temp)) || (realId && findMessage(realId));
   if (!hit) return;
@@ -567,6 +615,7 @@ export async function reactToMessage(chatId, id, emoji) {
   const before = msg.reactions || [];
   const mine = before.find((r) => sameUser(r.user_id, myIdNow));
   const next = mine?.emoji === emoji ? null : emoji;
+  if (next && isLoveReaction(next)) loveBurst('sent', { particles: reactionParticles(next) });
   const others = before.filter((r) => !sameUser(r.user_id, myIdNow));
   const setReactions = (reactions) =>
     updateMessages(chatId, (list) => list.map((m) => (m.id === id ? { ...m, reactions } : m)));
@@ -762,6 +811,11 @@ function handleFrame({ type, data }) {
       const msg = normMessage({ ...data, status: 'delivered' }, chatId);
       incoming(chatId, msg, previewText(msg));
       setTyper(chatId, { id: data.sender_id }, false);
+      // Their love signal: its animation over the page (only while you're looking at it)
+      const signal = loveSignalOf(msg.metadata);
+      if (signal && !msg.mine && document.visibilityState === 'visible') {
+        loveBurst('received', { signal: signal.id, name: state.chats[chatId]?.name || data.sender_name || null });
+      }
       return;
     }
 
@@ -810,6 +864,7 @@ function handleFrame({ type, data }) {
     case 'message_error': {
       const temp = String(data?.temp_msg_id || '');
       clearTimeout(ackTimers.get(temp));
+      clearHttpRetry(temp);
       const hit = findMessage(temp);
       if (hit) {
         updateMessages(hit.chatId, (list) => list.map((m) => (m.clientId === temp ? { ...m, status: 'failed', error: data.reason } : m)));
@@ -895,6 +950,10 @@ function handleFrame({ type, data }) {
       }
       // Someone reacted to my message: chat list line + (if I'm not looking) a notification
       if (data?.emoji && sameUser(data.sender_id, state.me?.id) && !sameUser(data.user_id, state.me?.id)) {
+        // ❤️ 😘 🥰…: hearts float up (💋 for a kiss) with the love sound
+        if (isLoveReaction(data.emoji) && document.visibilityState === 'visible') {
+          if (loveBurst('reaction', { particles: reactionParticles(data.emoji) })) playLoveSound();
+        }
         const chatId = data.group_id || chatIdFor(data.user_id);
         const about = data.message_preview ? `: “${data.message_preview}”` : ' your message';
         if (chatId) {

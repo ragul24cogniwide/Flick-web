@@ -9,10 +9,13 @@ import {
   locateQuoted,
   reactToMessage,
   retryMessage,
+  sendLoveSignal,
   setArchived,
   toast,
   useStore,
 } from '../lib/store';
+import { LOVE_SIGNALS, LOVE_SIGNAL_ORDER, chatTheme } from '../lib/love';
+import { useUi } from '../lib/notify';
 import Composer from './Composer';
 import Icon from './Icon';
 import Message from './Message';
@@ -168,6 +171,13 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
   );
 
   const onRetry = useCallback((msg) => retryMessage(chat.id, msg.id), [chat.id]);
+  const onSendLove = useCallback((id) => sendLoveSignal(chat.id, id || 'thinking'), [chat.id]);
+  const [loveMenu, setLoveMenu] = useState(false);
+  const loveBtn = useRef(null);
+  const ui = useUi();
+  const canLove = !isGroup && !chat.isAgent;
+  // The chat theme set on the phone (couple themes: hearts wallpaper and rose bubbles)
+  const vibe = useMemo(() => (canLove ? chatTheme(chat.id, list) : 'default'), [canLove, chat.id, list]);
   const onReact = useCallback((msg, emoji) => reactToMessage(chat.id, msg.id, emoji), [chat.id]);
   // Who reacted: "You", the other person, or the group member's name
   const nameOf = useCallback(
@@ -217,24 +227,52 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
     } else subtitle = chat.member_count ? `${chat.member_count} members` : 'Tap for group info';
     if (left) subtitle = 'You’re no longer a member';
   } else if (chat.isAgent) subtitle = typers.length ? 'thinking…' : 'Personal AI assistant';
-  else if (typers.length) subtitle = 'typing…';
+  else if (typers.length) subtitle = ui.letterTicks !== false ? 'writing you a letter…' : 'typing…';
   else if (chat.online) subtitle = 'online';
   else subtitle = lastSeenText(chat.last_seen);
 
   return (
-    <section className="chat-pane">
+    <section className="chat-pane" data-vibe={vibe}>
       <header className="chat-header">
         <IconButton icon="back" label="Back to chats" className="mobile-only" onClick={onBack} />
         <button type="button" className="chat-header-main" onClick={onToggleInfo} aria-label={`${chat.name} info`}>
           <Avatar id={chat.id} name={chat.name} color={chat.avatar_color} url={chat.avatar_url} size={40} group={isGroup} />
           <span className="chat-header-text">
             <span className="chat-header-name">{chat.name}</span>
-            {subtitle && <span className={`chat-header-sub${typers.length ? ' typing' : ''}`}>{subtitle}</span>}
+            {subtitle && (
+              <span className={`chat-header-sub${typers.length ? ' typing' : ''}${typers.length && !isGroup && ui.letterTicks !== false ? ' letter' : ''}`}>
+                {typers.length > 0 && !isGroup && !chat.isAgent && ui.letterTicks !== false && (
+                  <span className="writing-letter" aria-hidden="true">✉️</span>
+                )}
+                {subtitle}
+              </span>
+            )}
           </span>
         </button>
         <div className="chat-header-actions">
           {!isGroup && !chat.isAgent && (
             <>
+              <div className="menu-wrap">
+                <IconButton
+                  icon="heart"
+                  label={`Send some love to ${chat.name}`}
+                  className="love-btn"
+                  ref={loveBtn}
+                  aria-haspopup="menu"
+                  aria-expanded={loveMenu}
+                  onClick={() => setLoveMenu((v) => !v)}
+                />
+                {loveMenu && (
+                  <Menu
+                    anchor={loveBtn}
+                    onClose={() => setLoveMenu(false)}
+                    items={LOVE_SIGNAL_ORDER.map((id) => ({
+                      label: `${LOVE_SIGNALS[id].emoji}  ${LOVE_SIGNALS[id].menu}`,
+                      onClick: () => onSendLove(id),
+                    }))}
+                  />
+                )}
+              </div>
               <IconButton icon="video" label="Video call" disabled={inCall} onClick={() => startCall(chat.id, true)} />
               <IconButton icon="phone" label="Voice call" disabled={inCall} onClick={() => startCall(chat.id, false)} />
             </>
@@ -318,6 +356,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
                 onOpenImage={setLightbox}
                 onJump={jumpTo}
                 onReact={onReact}
+                onSendLove={canLove ? onSendLove : null}
                 nameOf={nameOf}
                 animate={r.msg.ts > openedAt}
                 reactionsOn={!chat.isAgent}

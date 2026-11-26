@@ -1322,6 +1322,41 @@ a {
 .tick.failed {
   color: var(--danger);
 }
+.tick.letter {
+  flex: none;
+  margin-bottom: -1px;
+  color: var(--muted);
+  opacity: 0.75;
+}
+.tick.letter.delivered {
+  opacity: 1;
+}
+.tick.letter.read {
+  color: #e11d48;
+  opacity: 1;
+}
+.letter-seal {
+  fill: #e11d48;
+}
+.letter-heart-white {
+  fill: #fff;
+}
+:root[data-theme='dark'] .letter-seal {
+  fill: #fb7185;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .letter-seal {
+    fill: #fb7185;
+  }
+}
+:root[data-theme='dark'] .tick.letter.read {
+  color: #fb7185;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .tick.letter.read {
+    color: #fb7185;
+  }
+}
 .bubble-menu-btn {
   position: absolute;
   top: 2px;
@@ -2842,4 +2877,352 @@ a {
   .left-panels {
     min-height: 0;
   }
+}
+
+/* ---------------- chat themes (set on the phone; couple themes have hearts) ---------------- */
+.chat-pane[data-vibe='love'] {
+  --chat-bg: #FBE4EA;
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23E11D48%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.18%22%3E%3Cpath transform=%22translate(6 6) scale(0.9167)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(58 12) scale(0.4167)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23E11D48%22/%3E%3Cpath transform=%22translate(96 34) scale(0.7500)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(22 52) scale(0.6667)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(33 59) scale(0.5417)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath d=%22M74 84h26a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3h-26a3 3 0 0 1-3-3v-15a3 3 0 0 1 3-3z%22/%3E%3Cpath d=%22M72 86l15 10 15-10%22/%3E%3Cpath transform=%22translate(83.5 95) scale(0.2917)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23E11D48%22/%3E%3Cpath d=%22M14 100l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Cpath d=%22M104 118c0-4 6-4 9 0 3 4 9 4 9 0 0-4-6-4-9 0-3 4-9 4-9 0z%22/%3E%3Cpath transform=%22translate(60 60) scale(0.3333)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23E11D48%22/%3E%3Cpath transform=%22translate(114 6) scale(0.3750)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Ccircle cx=%2248%22 cy=%22112%22 r=%221.6%22 fill=%22%23E11D48%22/%3E%3Ccircle cx=%2288%22 cy=%2220%22 r=%221.2%22 fill=%22%23E11D48%22/%3E%3Ccircle cx=%226%22 cy=%2278%22 r=%221.2%22 fill=%22%23E11D48%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.32), rgba(122, 106, 79, 0.07));
+  --bubble-me: #ffd3e0;
+}
+.chat-pane[data-vibe='blush'] {
+  --chat-bg: #FDECE3;
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23F43F5E%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.18%22%3E%3Cpath transform=%22translate(6 6) scale(0.9167)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(58 12) scale(0.4167)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23F43F5E%22/%3E%3Cpath transform=%22translate(96 34) scale(0.7500)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(22 52) scale(0.6667)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(33 59) scale(0.5417)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath d=%22M74 84h26a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3h-26a3 3 0 0 1-3-3v-15a3 3 0 0 1 3-3z%22/%3E%3Cpath d=%22M72 86l15 10 15-10%22/%3E%3Cpath transform=%22translate(83.5 95) scale(0.2917)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23F43F5E%22/%3E%3Cpath d=%22M14 100l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Cpath d=%22M104 118c0-4 6-4 9 0 3 4 9 4 9 0 0-4-6-4-9 0-3 4-9 4-9 0z%22/%3E%3Cpath transform=%22translate(60 60) scale(0.3333)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23F43F5E%22/%3E%3Cpath transform=%22translate(114 6) scale(0.3750)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Ccircle cx=%2248%22 cy=%22112%22 r=%221.6%22 fill=%22%23F43F5E%22/%3E%3Ccircle cx=%2288%22 cy=%2220%22 r=%221.2%22 fill=%22%23F43F5E%22/%3E%3Ccircle cx=%226%22 cy=%2278%22 r=%221.2%22 fill=%22%23F43F5E%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.32), rgba(122, 106, 79, 0.07));
+  --bubble-me: #ffdccf;
+}
+.chat-pane[data-vibe='midnight'] {
+  --chat-bg: #25101C;
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23FB7185%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.16%22%3E%3Cpath transform=%22translate(6 6) scale(0.9167)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(58 12) scale(0.4167)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23FB7185%22/%3E%3Cpath transform=%22translate(96 34) scale(0.7500)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(22 52) scale(0.6667)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath transform=%22translate(33 59) scale(0.5417)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Cpath d=%22M74 84h26a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3h-26a3 3 0 0 1-3-3v-15a3 3 0 0 1 3-3z%22/%3E%3Cpath d=%22M72 86l15 10 15-10%22/%3E%3Cpath transform=%22translate(83.5 95) scale(0.2917)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23FB7185%22/%3E%3Cpath d=%22M14 100l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Cpath d=%22M104 118c0-4 6-4 9 0 3 4 9 4 9 0 0-4-6-4-9 0-3 4-9 4-9 0z%22/%3E%3Cpath transform=%22translate(60 60) scale(0.3333)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22%23FB7185%22/%3E%3Cpath transform=%22translate(114 6) scale(0.3750)%22 vector-effect=%22non-scaling-stroke%22 d=%22M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z%22 fill=%22none%22/%3E%3Ccircle cx=%2248%22 cy=%22112%22 r=%221.6%22 fill=%22%23FB7185%22/%3E%3Ccircle cx=%2288%22 cy=%2220%22 r=%221.2%22 fill=%22%23FB7185%22/%3E%3Ccircle cx=%226%22 cy=%2278%22 r=%221.2%22 fill=%22%23FB7185%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.22));
+  --bubble-me: #ffd3e0;
+}
+.chat-pane[data-vibe='coffee'] {
+  --chat-bg: #EADBC8;
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23D97706%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.14%22%3E%3Cpath d=%22M10 14h22a6 6 0 0 1 6 6v9a6 6 0 0 1-6 6H20l-6 5v-5h-4a6 6 0 0 1-6-6v-9a6 6 0 0 1 6-6z%22/%3E%3Cpath d=%22M16 24h14M16 29h9%22/%3E%3Cpath d=%22M86 14c-3-4-9-4-11 1-2-5-8-5-11-1-4 5 1 11 11 17 10-6 15-12 11-17z%22/%3E%3Cpath d=%22M116 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Ccircle cx=%2248%22 cy=%2262%22 r=%2210%22/%3E%3Cpath d=%22M43 65q5 5 10 0%22/%3E%3Cpath d=%22M6 92l5 5 9-10M14 97h2l9-10%22/%3E%3Cpath d=%22M80 84V68l12-3v15%22/%3E%3Ccircle cx=%2277%22 cy=%2284%22 r=%223%22/%3E%3Ccircle cx=%2289%22 cy=%2280%22 r=%223%22/%3E%3Crect x=%2296%22 y=%2296%22 width=%2224%22 height=%2216%22 rx=%224%22/%3E%3Ccircle cx=%22108%22 cy=%22104%22 r=%224.5%22/%3E%3Cpath d=%22M101 96l2-4h7l2 4%22/%3E%3Cpath d=%22M40 100h14v8a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM54 102h3a3 3 0 0 1 0 6h-3%22/%3E%3Cpath d=%22M106 72l1.8 3.8 4.2.6-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-.6z%22/%3E%3C/g%3E%3Cg fill=%22%23D97706%22 opacity=%220.14%22%3E%3Ccircle cx=%2244.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2251.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2264%22 cy=%22112%22 r=%221.6%22/%3E%3Ccircle cx=%2230%22 cy=%22118%22 r=%221.2%22/%3E%3Ccircle cx=%22122%22 cy=%2210%22 r=%221.2%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.32), rgba(122, 106, 79, 0.07));
+}
+.chat-pane[data-vibe='dev'] {
+  --chat-bg: #DCE7F5;
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%233B82F6%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.14%22%3E%3Cpath d=%22M10 14h22a6 6 0 0 1 6 6v9a6 6 0 0 1-6 6H20l-6 5v-5h-4a6 6 0 0 1-6-6v-9a6 6 0 0 1 6-6z%22/%3E%3Cpath d=%22M16 24h14M16 29h9%22/%3E%3Cpath d=%22M86 14c-3-4-9-4-11 1-2-5-8-5-11-1-4 5 1 11 11 17 10-6 15-12 11-17z%22/%3E%3Cpath d=%22M116 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Ccircle cx=%2248%22 cy=%2262%22 r=%2210%22/%3E%3Cpath d=%22M43 65q5 5 10 0%22/%3E%3Cpath d=%22M6 92l5 5 9-10M14 97h2l9-10%22/%3E%3Cpath d=%22M80 84V68l12-3v15%22/%3E%3Ccircle cx=%2277%22 cy=%2284%22 r=%223%22/%3E%3Ccircle cx=%2289%22 cy=%2280%22 r=%223%22/%3E%3Crect x=%2296%22 y=%2296%22 width=%2224%22 height=%2216%22 rx=%224%22/%3E%3Ccircle cx=%22108%22 cy=%22104%22 r=%224.5%22/%3E%3Cpath d=%22M101 96l2-4h7l2 4%22/%3E%3Cpath d=%22M40 100h14v8a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM54 102h3a3 3 0 0 1 0 6h-3%22/%3E%3Cpath d=%22M106 72l1.8 3.8 4.2.6-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-.6z%22/%3E%3C/g%3E%3Cg fill=%22%233B82F6%22 opacity=%220.14%22%3E%3Ccircle cx=%2244.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2251.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2264%22 cy=%22112%22 r=%221.6%22/%3E%3Ccircle cx=%2230%22 cy=%22118%22 r=%221.2%22/%3E%3Ccircle cx=%22122%22 cy=%2210%22 r=%221.2%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.32), rgba(122, 106, 79, 0.07));
+}
+.chat-pane[data-vibe='party'] {
+  --chat-bg: #F7DCEB;
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23EC4899%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.14%22%3E%3Cpath d=%22M10 14h22a6 6 0 0 1 6 6v9a6 6 0 0 1-6 6H20l-6 5v-5h-4a6 6 0 0 1-6-6v-9a6 6 0 0 1 6-6z%22/%3E%3Cpath d=%22M16 24h14M16 29h9%22/%3E%3Cpath d=%22M86 14c-3-4-9-4-11 1-2-5-8-5-11-1-4 5 1 11 11 17 10-6 15-12 11-17z%22/%3E%3Cpath d=%22M116 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Ccircle cx=%2248%22 cy=%2262%22 r=%2210%22/%3E%3Cpath d=%22M43 65q5 5 10 0%22/%3E%3Cpath d=%22M6 92l5 5 9-10M14 97h2l9-10%22/%3E%3Cpath d=%22M80 84V68l12-3v15%22/%3E%3Ccircle cx=%2277%22 cy=%2284%22 r=%223%22/%3E%3Ccircle cx=%2289%22 cy=%2280%22 r=%223%22/%3E%3Crect x=%2296%22 y=%2296%22 width=%2224%22 height=%2216%22 rx=%224%22/%3E%3Ccircle cx=%22108%22 cy=%22104%22 r=%224.5%22/%3E%3Cpath d=%22M101 96l2-4h7l2 4%22/%3E%3Cpath d=%22M40 100h14v8a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM54 102h3a3 3 0 0 1 0 6h-3%22/%3E%3Cpath d=%22M106 72l1.8 3.8 4.2.6-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-.6z%22/%3E%3C/g%3E%3Cg fill=%22%23EC4899%22 opacity=%220.14%22%3E%3Ccircle cx=%2244.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2251.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2264%22 cy=%22112%22 r=%221.6%22/%3E%3Ccircle cx=%2230%22 cy=%22118%22 r=%221.2%22/%3E%3Ccircle cx=%22122%22 cy=%2210%22 r=%221.2%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.32), rgba(122, 106, 79, 0.07));
+}
+.chat-pane[data-vibe='night'] {
+  --chat-bg: #1B1D2B;
+  --chat-doodle: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22132%22 height=%22132%22 viewBox=%220 0 132 132%22%3E%3Cg stroke=%22%23FFFFFF%22 stroke-width=%221.3%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 opacity=%220.09%22%3E%3Cpath d=%22M10 14h22a6 6 0 0 1 6 6v9a6 6 0 0 1-6 6H20l-6 5v-5h-4a6 6 0 0 1-6-6v-9a6 6 0 0 1 6-6z%22/%3E%3Cpath d=%22M16 24h14M16 29h9%22/%3E%3Cpath d=%22M86 14c-3-4-9-4-11 1-2-5-8-5-11-1-4 5 1 11 11 17 10-6 15-12 11-17z%22/%3E%3Cpath d=%22M116 44l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z%22/%3E%3Ccircle cx=%2248%22 cy=%2262%22 r=%2210%22/%3E%3Cpath d=%22M43 65q5 5 10 0%22/%3E%3Cpath d=%22M6 92l5 5 9-10M14 97h2l9-10%22/%3E%3Cpath d=%22M80 84V68l12-3v15%22/%3E%3Ccircle cx=%2277%22 cy=%2284%22 r=%223%22/%3E%3Ccircle cx=%2289%22 cy=%2280%22 r=%223%22/%3E%3Crect x=%2296%22 y=%2296%22 width=%2224%22 height=%2216%22 rx=%224%22/%3E%3Ccircle cx=%22108%22 cy=%22104%22 r=%224.5%22/%3E%3Cpath d=%22M101 96l2-4h7l2 4%22/%3E%3Cpath d=%22M40 100h14v8a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM54 102h3a3 3 0 0 1 0 6h-3%22/%3E%3Cpath d=%22M106 72l1.8 3.8 4.2.6-3 2.9.7 4.2-3.7-2-3.7 2 .7-4.2-3-2.9 4.2-.6z%22/%3E%3C/g%3E%3Cg fill=%22%23FFFFFF%22 opacity=%220.09%22%3E%3Ccircle cx=%2244.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2251.5%22 cy=%2259%22 r=%22.9%22/%3E%3Ccircle cx=%2264%22 cy=%22112%22 r=%221.6%22/%3E%3Ccircle cx=%2230%22 cy=%22118%22 r=%221.2%22/%3E%3Ccircle cx=%22122%22 cy=%2210%22 r=%221.2%22/%3E%3C/g%3E%3C/svg%3E");
+  --chat-wash: linear-gradient(rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.22));
+}
+/* Couple themes tint my bubbles rose; darker in dark mode so the light text stays readable */
+:root[data-theme='dark'] .chat-pane[data-vibe='love'] {
+  --bubble-me: #6e2342;
+}
+:root[data-theme='dark'] .chat-pane[data-vibe='blush'] {
+  --bubble-me: #6b3a2c;
+}
+:root[data-theme='dark'] .chat-pane[data-vibe='midnight'] {
+  --bubble-me: #7a2848;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .chat-pane[data-vibe='love'] {
+    --bubble-me: #6e2342;
+  }
+  :root:not([data-theme='light']) .chat-pane[data-vibe='blush'] {
+    --bubble-me: #6b3a2c;
+  }
+  :root:not([data-theme='light']) .chat-pane[data-vibe='midnight'] {
+    --bubble-me: #7a2848;
+  }
+}
+
+/* ---------------- "Thinking of you" ---------------- */
+.love-btn {
+  color: #fb7185;
+}
+.bubble.love,
+.mine .bubble.love {
+  background: #ffe4ec;
+  color: #be123c;
+  border: 1.5px solid #fda4bc;
+}
+:root[data-theme='dark'] .bubble.love {
+  background: #4a1a2e;
+  color: #ffd1de;
+  border-color: #9f2d55;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .bubble.love {
+    background: #4a1a2e;
+    color: #ffd1de;
+    border-color: #9f2d55;
+  }
+}
+.love-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 150px;
+  padding: 4px 10px 2px;
+}
+.love-msg-emoji {
+  font-size: 34px;
+  line-height: 1.2;
+}
+.love-msg-title {
+  font-size: 16px;
+  font-weight: 800;
+}
+.love-back {
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #e11d48;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.love-back:hover {
+  background: #be123c;
+}
+.love-burst {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  overflow: hidden;
+}
+.love-heart {
+  position: absolute;
+  bottom: -48px;
+  opacity: 0;
+  animation-name: love-float;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+@keyframes love-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(calc(var(--drift) * 0.3), -8vh) scale(1);
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift), calc(var(--rise) * -1)) scale(1.1);
+  }
+}
+.love-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 26px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #be123c;
+  font-size: 17px;
+  font-weight: 700;
+  box-shadow: 0 8px 30px rgba(225, 29, 72, 0.25);
+  transform: translate(-50%, -50%);
+  animation: love-card 3.2s ease forwards;
+}
+.love-card-emoji {
+  font-size: 40px;
+}
+@keyframes love-card {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  12%,
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .love-heart {
+    display: none;
+  }
+}
+
+/* ---------------- love signals: more motions ---------------- */
+/* good night: stars drift down from the top */
+.motion-down .love-heart {
+  bottom: auto;
+  top: -48px;
+  animation-name: love-fall;
+  animation-timing-function: ease-in-out;
+}
+@keyframes love-fall {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  12% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), calc(var(--rise) + 10vh)) scale(1);
+  }
+}
+/* a hug: the card squeezes, then hearts burst out from the middle */
+.motion-hug .love-heart {
+  bottom: auto;
+  top: 50%;
+  left: 50%;
+  animation-name: love-burst-out;
+}
+@keyframes love-burst-out {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  15% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2);
+  }
+}
+.love-card.hug {
+  animation: love-card 3.2s ease forwards, love-squeeze 0.9s ease 0.35s 1;
+}
+@keyframes love-squeeze {
+  0%,
+  100% {
+    scale: 1;
+  }
+  20% {
+    scale: 0.86;
+  }
+  45% {
+    scale: 1.08;
+  }
+  65% {
+    scale: 0.9;
+  }
+}
+.love-card.night {
+  background: rgba(30, 27, 75, 0.95);
+  color: #e0e7ff;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
+}
+
+/* ---------------- "writing you a letter…" ---------------- */
+.chat-header-sub.letter {
+  color: #fb7185;
+  font-weight: 600;
+}
+.writing-letter {
+  display: inline-block;
+  margin-right: 5px;
+  animation: letter-bob 0.84s ease-in-out infinite alternate;
+}
+@keyframes letter-bob {
+  from {
+    transform: translateY(1px) rotate(-8deg);
+  }
+  to {
+    transform: translateY(-2px) rotate(8deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .writing-letter {
+    animation: none;
+  }
+}
+
+/* ---------------- polaroid photos ---------------- */
+.bubble.polaroid-bubble,
+.mine .bubble.polaroid-bubble {
+  background: transparent;
+  box-shadow: none;
+  padding: 10px 6px 4px;
+}
+.polaroid {
+  position: relative;
+  margin: 0 0 6px;
+  padding: 9px 9px 6px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  transform: rotate(var(--tilt));
+}
+.polaroid-photo {
+  display: block;
+  padding: 0;
+  border: 0;
+  cursor: zoom-in;
+}
+.polaroid-photo img {
+  display: block;
+  width: min(250px, 60vw);
+  height: min(250px, 60vw);
+  object-fit: cover;
+  background: #e5e7eb;
+}
+.polaroid figcaption {
+  width: min(250px, 60vw);
+  min-height: 30px;
+  padding-top: 8px;
+  text-align: center;
+  font-family: 'Segoe Print', 'Bradley Hand', 'Noteworthy', 'Comic Sans MS', cursive;
+  font-size: 17px;
+  color: #3f3f46;
+  overflow-wrap: anywhere;
+}
+.polaroid-sticker {
+  position: absolute;
+  top: -12px;
+  right: -10px;
+  font-size: 30px;
+  transform: rotate(14deg);
+}
+.polaroid-bubble .bubble-meta {
+  color: var(--muted);
+}
+.photo-preview.as-polaroid {
+  background: #fff;
+  padding: 12px 12px 36px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+.polaroid-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.polaroid-switch input {
+  accent-color: #e11d48;
+  width: 16px;
+  height: 16px;
 }

@@ -12,7 +12,7 @@ npm run build        # production files in dist/
 npm run lint
 ```
 
-By default it talks to the production backend (`https://pocket-backend-7lmx.onrender.com`). To use
+By default it talks to the production backend (`https://pocket-backend-production-0fa43272.up.railway.app`). To use
 another backend, for example a local one, set `VITE_FLICK_API` when you start or build:
 
 ```bash

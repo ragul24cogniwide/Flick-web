@@ -1,6 +1,8 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { EMOJI, QUICK_REACTIONS } from '../lib/emoji';
 import { clock, fileTypeLabel, formatBytes, formatDuration, linkParts, mediaUrl, memberColor, sameUser, systemEventText } from '../lib/format';
+import { CHAT_THEME, PHOTO_STYLE_POLAROID, chatThemeNotice, loveSignalOf } from '../lib/love';
+import { useUi } from '../lib/notify';
 import Icon from './Icon';
 import { Avatar, Menu } from './ui';
 
@@ -45,9 +47,52 @@ export function RichText({ text }) {
 
 /* ---------------- ticks ---------------- */
 
+const HEART = 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z';
+// A filled heart of `size` centred on cx, cy; `ring` (a CSS colour) cuts it out from the lines behind
+function Heart({ cx, cy, size, className, ring, ringWidth = 1.6 }) {
+  const k = size / 24;
+  return (
+    <g transform={`translate(${cx - 12 * k} ${cy - 12.1 * k}) scale(${k})`}>
+      {ring && <path d={HEART} style={{ fill: ring, stroke: ring, strokeWidth: (ringWidth * 2) / k }} />}
+      <path d={HEART} className={className} stroke="none" />
+    </g>
+  );
+}
+
+/**
+ * Love letters instead of ticks (same as the phone app): a closed grey letter when sent, sealed
+ * with a rose heart when delivered (it's in their postbox), a rose love letter 💌 when seen.
+ */
+function LetterTick({ status }) {
+  const title = status === 'read' ? 'Seen' : status === 'delivered' ? 'Delivered' : 'Sent';
+  const common = { width: 19, height: 16, viewBox: '0 0 24 20', role: 'img', 'aria-label': title };
+  if (status === 'read') {
+    return (
+      <svg {...common} className="tick letter read">
+        <title>{title}</title>
+        <rect x="2" y="3.5" width="20" height="14.5" rx="2.6" fill="currentColor" />
+        <path d="M3.2 5 12 11l8.8-6" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <Heart cx={12} cy={11.6} size={8.5} className="letter-heart-white" ring="currentColor" ringWidth={1.3} />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common} className={`tick letter${status === 'delivered' ? ' delivered' : ''}`}>
+      <title>{title}</title>
+      <g fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="13.5" rx="2.2" />
+        <path d="M2.8 5.2 12 11.4l9.2-6.2" />
+      </g>
+      {status === 'delivered' && <Heart cx={12} cy={11.8} size={10.5} className="letter-seal" ring="var(--bubble-me)" />}
+    </svg>
+  );
+}
+
 export function Ticks({ status }) {
+  const { letterTicks } = useUi();
   if (status === 'pending') return <Icon name="clock" size={13} className="tick pending" title="Sending" />;
   if (status === 'failed') return <Icon name="alert" size={14} className="tick failed" title="Not sent" />;
+  if (letterTicks !== false) return <LetterTick status={status} />;
   if (status === 'read') return <Icon name="checks" size={16} className="tick read" title="Read" />;
   if (status === 'delivered') return <Icon name="checks" size={16} className="tick" title="Delivered" />;
   return <Icon name="check" size={14} className="tick" title="Sent" />;
@@ -194,7 +239,7 @@ function ReactionChips({ reactions, myId, nameOf, onReact }) {
 
 /* ---------------- one message ---------------- */
 
-function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, onRetry, onOpenImage, onJump, onReact, nameOf, reactionsOn = true, highlighted, animate }) {
+function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, onRetry, onOpenImage, onJump, onReact, onSendLove, nameOf, reactionsOn = true, highlighted, animate }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reacting, setReacting] = useState(false);
   const btnRef = useRef(null);
@@ -208,13 +253,24 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
   }
 
   const meta = msg.metadata;
+  // A chat theme set on the phone: a centred notice, like group events
+  if (meta?.type === CHAT_THEME) {
+    return (
+      <div className="system-chip" id={`m-${msg.id}`}>
+        {chatThemeNotice(msg)}
+      </div>
+    );
+  }
+  const love = loveSignalOf(meta);
+  const isLove = !!love;
   const image = meta?.type === 'image' ? mediaUrl(meta.media_url || meta.uri) : null;
   const isVoice = meta?.type === 'audio';
   // A shared file (from the phone app): opens / downloads from the server
   const doc = meta?.type === 'document' ? mediaUrl(meta.media_url || meta.uri) : null;
   const docName = meta?.file_name || String(msg.text || '').replace(/^📄\s*/, '') || 'Document';
   const caption = image ? meta.caption || (msg.text && !/^📷 Photo$/.test(msg.text) ? msg.text : '') : '';
-  const showText = !image && !isVoice && !doc;
+  const showText = !image && !isVoice && !doc && !isLove;
+  const polaroid = !!image && meta?.style === PHOTO_STYLE_POLAROID;
   const showSender = isGroup && !msg.mine && firstOfRun;
   const nameColor = memberColor(msg.senderId);
   const canEdit = msg.mine && showText && msg.status !== 'pending' && msg.status !== 'failed';
@@ -241,7 +297,7 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
           {reacting && <ReactionPicker mine={myReaction} onPick={react} onClose={() => setReacting(false)} align={msg.mine ? 'right' : 'left'} />}
         </span>
       )}
-      <div className={`bubble${image ? ' has-image' : ''}`}>
+      <div className={`bubble${image ? ' has-image' : ''}${isLove ? ' love' : ''}${polaroid ? ' polaroid-bubble' : ''}`}>
         {showSender && (
           <div className="bubble-sender" style={{ color: nameColor }}>
             {msg.senderName || 'Member'}
@@ -258,10 +314,30 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
             <span className="bubble-reply-text">{String(msg.replyTo.text || '').slice(0, 200)}</span>
           </button>
         )}
-        {image && (
+        {polaroid && (
+          <figure className="polaroid" style={{ '--tilt': `${String(msg.clientId || msg.id).length % 2 ? 2.5 : -2.5}deg` }}>
+            <button type="button" className="polaroid-photo" onClick={() => onOpenImage(image)} aria-label="Open polaroid photo">
+              <img src={image} alt={caption || 'Photo'} loading="lazy" referrerPolicy="no-referrer" />
+            </button>
+            <figcaption>{caption || '\u00a0'}</figcaption>
+            <span className="polaroid-sticker" aria-hidden="true">💖</span>
+          </figure>
+        )}
+        {image && !polaroid && (
           <button type="button" className="bubble-image" onClick={() => onOpenImage(image)} aria-label="Open photo">
             <img src={image} alt={caption || 'Photo'} loading="lazy" referrerPolicy="no-referrer" />
           </button>
+        )}
+        {isLove && (
+          <div className="love-msg" aria-label={msg.mine ? `You sent: ${love.title}` : love.title}>
+            <span className="love-msg-emoji">{love.emoji}</span>
+            <span className="love-msg-title">{love.title}</span>
+            {!msg.mine && onSendLove && (
+              <button type="button" className="love-back" onClick={() => onSendLove(love.id)}>
+                {love.back}
+              </button>
+            )}
+          </div>
         )}
         {isVoice && <VoiceNote meta={meta} mine={msg.mine} />}
         {meta?.type === 'document' && (
@@ -283,7 +359,7 @@ function Message({ msg, isGroup, myId, firstOfRun, onReply, onEdit, onDelete, on
             <Icon name="download" size={18} />
           </a>
         )}
-        {(showText || caption) && (
+        {(showText || (caption && !polaroid)) && (
           <div className="bubble-text">
             <RichText text={showText ? msg.text : caption} />
           </div>

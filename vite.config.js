@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react'
 import process from 'node:process'
 import { defineConfig, loadEnv } from 'vite'
 
-const DEFAULT_API = 'https://pocket-backend-7lmx.onrender.com'
+const DEFAULT_API = 'https://pocket-backend-production-0fa43272.up.railway.app'
 
 /**
  * Production builds get a strict Content-Security-Policy: scripts only from this site, network

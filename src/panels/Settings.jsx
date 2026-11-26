@@ -181,6 +181,7 @@ export function SettingsPanel({ onClose, onLogout }) {
         />
         <Toggle label="Show message preview" hint="In desktop notifications on this computer" checked={ui.notificationPreview} onChange={(v) => setUi({ notificationPreview: v })} />
         <Toggle label="Sounds" hint="For incoming messages and calls" checked={ui.sounds} onChange={(v) => setUi({ sounds: v })} />
+        <Toggle label="Love sounds" hint="A soft heartbeat chime for hugs, kisses and love reactions" checked={ui.loveSounds !== false} onChange={(v) => setUi({ loveSounds: v })} />
         <Toggle label="Message notifications" hint="For this account, on all your devices" checked={prefs.msg_notifications !== false} onChange={(v) => setPref('msg_notifications', v)} />
 
         <h3 className="settings-title">
@@ -193,6 +194,12 @@ export function SettingsPanel({ onClose, onLogout }) {
           <Icon name="type" size={16} /> Chats
         </h3>
         <Toggle label="Enter is send" hint="Shift + Enter adds a new line" checked={ui.enterToSend} onChange={(v) => setUi({ enterToSend: v })} />
+        <Toggle
+          label="Love letter style"
+          hint="Letters instead of ticks, and “writing you a letter…” while they type"
+          checked={ui.letterTicks !== false}
+          onChange={(v) => setUi({ letterTicks: v })}
+        />
 
         <h3 className="settings-title">
           <Icon name="monitor" size={16} /> Linked devices
