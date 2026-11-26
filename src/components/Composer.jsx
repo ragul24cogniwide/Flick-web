@@ -131,7 +131,7 @@ export default function Composer({ chat, replyTo, editing, onClearReply, onClear
   const change = (value) => {
     setText(value);
     if (!editing) drafts.set(chatId, value);
-    if (editing || chat.isAgent) return;
+    if (editing) return;
     if (value.trim()) {
       socket.typing(chatId, true);
       clearTimeout(typingTimer.current);
@@ -290,7 +290,7 @@ export default function Composer({ chat, replyTo, editing, onClearReply, onClear
         ) : (
           <>
             <IconButton icon="smile" label="Emoji" className="emoji-toggle" active={emojiOpen} onClick={() => setEmojiOpen((v) => !v)} />
-            {!editing && !chat.isAgent && <IconButton icon="paperclip" label="Attach a photo" onClick={() => fileRef.current?.click()} />}
+            {!editing && <IconButton icon="paperclip" label="Attach a photo" onClick={() => fileRef.current?.click()} />}
             <input
               ref={fileRef}
               type="file"
@@ -305,7 +305,7 @@ export default function Composer({ chat, replyTo, editing, onClearReply, onClear
               ref={inputRef}
               className="composer-input"
               rows={1}
-              placeholder={chat.isAgent ? 'Ask your AI agent…' : 'Type a message'}
+              placeholder="Type a message"
               value={text}
               maxLength={MAX_MESSAGE_CHARS}
               onChange={(e) => change(e.target.value)}
@@ -313,7 +313,7 @@ export default function Composer({ chat, replyTo, editing, onClearReply, onClear
               onPaste={onPaste}
               aria-label="Message"
             />
-            {text.trim() || editing || !canRecordVoice() || chat.isAgent ? (
+            {text.trim() || editing || !canRecordVoice() ? (
               <button type="button" className="send-btn" onClick={submit} disabled={!text.trim()} aria-label={editing ? 'Save' : 'Send'}>
                 <Icon name={editing ? 'check' : 'send'} size={20} />
               </button>

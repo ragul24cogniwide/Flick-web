@@ -28,8 +28,8 @@ function Workspace() {
   const activeId = useStore((s) => s.activeId);
   const chat = useStore((s) => (s.activeId ? s.chats[s.activeId] : null));
   const me = useStore((s) => s.me);
-  // left column: us (Flick for lovers home) | chats | moments | status | calls | settings
-  const [section, setSection] = useState('us');
+  // left column: chats (where Flick Web opens) | us | moments | status | calls | settings
+  const [section, setSection] = useState('chats');
   const [panel, setPanel] = useState(null); // slides over it: profile | newChat | newGroup
   const [infoOpen, setInfoOpen] = useState(false);
 

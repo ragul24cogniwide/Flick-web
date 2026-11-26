@@ -12,7 +12,7 @@ function ContactInfo({ chat }) {
       <div className="info-hero">
         <Avatar id={chat.id} name={chat.name} color={chat.avatar_color} url={chat.avatar_url} size={120} />
         <h3>{chat.name}</h3>
-        {!chat.isAgent && <p className="muted">{chat.phone}</p>}
+        <p className="muted">{chat.phone}</p>
         <p className="muted small">{chat.online ? 'online' : lastSeenText(chat.last_seen)}</p>
       </div>
       {chat.quote && (
@@ -80,7 +80,7 @@ function AddMembersModal({ group, onClose }) {
   const [picked, setPicked] = useState([]);
   const [busy, setBusy] = useState(false);
   const existing = useMemo(() => new Set((group.members || []).map((m) => m.id)), [group.members]);
-  const people = useMemo(() => Object.values(chats).filter((c) => !c.is_group && !c.isAgent && !existing.has(c.id)), [chats, existing]);
+  const people = useMemo(() => Object.values(chats).filter((c) => !c.is_group && !existing.has(c.id)), [chats, existing]);
   const add = async () => {
     setBusy(true);
     const res = await api.addGroupMembers(group.id, picked.map((p) => p.id));

@@ -182,7 +182,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
   const [loveMenu, setLoveMenu] = useState(false);
   const loveBtn = useRef(null);
   const ui = useUi();
-  const canLove = !isGroup && !chat.isAgent;
+  const canLove = !isGroup;
   // The chat theme set on the phone (couple themes: hearts wallpaper and rose bubbles)
   const vibe = useMemo(() => (canLove ? chatTheme(chat.id, list) : 'default'), [canLove, chat.id, list]);
   const onReact = useCallback((msg, emoji) => reactToMessage(chat.id, msg.id, emoji), [chat.id]);
@@ -233,8 +233,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
         .join(', ');
     } else subtitle = chat.member_count ? `${chat.member_count} members` : 'Tap for group info';
     if (left) subtitle = 'You’re no longer a member';
-  } else if (chat.isAgent) subtitle = typers.length ? 'thinking…' : 'Personal AI assistant';
-  else if (typers.length) subtitle = ui.letterTicks !== false ? 'writing you a letter…' : 'typing…';
+  } else if (typers.length) subtitle = ui.letterTicks !== false ? 'writing you a letter…' : 'typing…';
   else if (chat.online) subtitle = 'online';
   else subtitle = lastSeenText(chat.last_seen);
 
@@ -248,7 +247,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
             <span className="chat-header-name">{chat.name}</span>
             {subtitle && (
               <span className={`chat-header-sub${typers.length ? ' typing' : ''}${typers.length && !isGroup && ui.letterTicks !== false ? ' letter' : ''}`}>
-                {typers.length > 0 && !isGroup && !chat.isAgent && ui.letterTicks !== false && (
+                {typers.length > 0 && !isGroup && ui.letterTicks !== false && (
                   <span className="writing-letter" aria-hidden="true">✉️</span>
                 )}
                 {subtitle}
@@ -257,7 +256,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
           </span>
         </button>
         <div className="chat-header-actions">
-          {!isGroup && !chat.isAgent && (
+          {!isGroup && (
             <>
               <div className="menu-wrap">
                 <IconButton
@@ -293,7 +292,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
                 onClose={() => setMenuOpen(false)}
                 items={[
                   { label: isGroup ? 'Group info' : 'Contact info', icon: isGroup ? 'users' : 'info', onClick: onToggleInfo },
-                  !chat.isAgent && {
+                  {
                     label: chat.archived ? 'Unarchive chat' : 'Archive chat',
                     icon: 'archive',
                     onClick: () => {
@@ -320,9 +319,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
           {!box?.hasMore && box?.loaded && (
             <div className="encryption-note">
               <Icon name="lock" size={12} />{' '}
-              {chat.isAgent
-                ? 'Your AI agent can read this chat to help you. Ask it to plan meetings or answer questions.'
-                : 'Messages are sent securely to the people in this chat.'}
+              Messages are sent securely to the people in this chat.
             </div>
           )}
           {box?.loading && !list.length && (
@@ -341,7 +338,7 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
             </div>
           )}
           {box?.loaded && !list.length && (
-            <div className="empty-chat">{isGroup ? 'Say hi to the group 👋' : chat.isAgent ? 'Ask me anything ✨' : `Say hi to ${chat.name} 👋`}</div>
+            <div className="empty-chat">{isGroup ? 'Say hi to the group 👋' : `Say hi to ${chat.name} 👋`}</div>
           )}
           {rows.map((r) =>
             r.divider ? (
@@ -366,7 +363,6 @@ export default function ChatPane({ chat, infoOpen, onToggleInfo, onBack, onClose
                 onSendLove={canLove ? onSendLove : null}
                 nameOf={nameOf}
                 animate={r.msg.ts > openedAt}
-                reactionsOn={!chat.isAgent}
               />
             ),
           )}

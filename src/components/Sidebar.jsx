@@ -16,13 +16,11 @@ const ChatRow = memo(function ChatRow({ chat, active, typers }) {
   const typing = typers?.length ? (chat.is_group ? typingLabel(typers) : 'typing…') : '';
   const [menuOpen, setMenuOpen] = useState(false);
   const menuBtn = useRef(null);
-  const canArchive = !chat.isAgent;
   return (
     <div
       className={`chat-row-wrap${menuOpen ? ' menu-open' : ''}`}
       onContextMenu={(e) => {
         // Right-click opens the chat's menu (Archive / Unarchive)
-        if (!canArchive) return;
         e.preventDefault();
         setMenuOpen(true);
       }}
@@ -46,7 +44,6 @@ const ChatRow = memo(function ChatRow({ chat, active, typers }) {
           <span className="chat-row-top">
             <span className="chat-row-name">
               {chat.name}
-              {chat.isAgent && <Icon name="sparkles" size={13} className="agent-spark" />}
             </span>
             <span className="chat-row-time">{listTime(chat.time)}</span>
           </span>
@@ -60,19 +57,17 @@ const ChatRow = memo(function ChatRow({ chat, active, typers }) {
           </span>
         </span>
       </button>
-      {canArchive && (
-        <button
-          type="button"
-          ref={menuBtn}
-          className="chat-row-menu-btn"
-          aria-label={`${chat.name} options`}
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          <Icon name="chevronDown" size={18} />
-        </button>
-      )}
+      <button
+        type="button"
+        ref={menuBtn}
+        className="chat-row-menu-btn"
+        aria-label={`${chat.name} options`}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((v) => !v)}
+      >
+        <Icon name="chevronDown" size={18} />
+      </button>
       {menuOpen && (
         <Menu
           anchor={menuBtn}
@@ -154,8 +149,8 @@ export default function Sidebar({ onPanel, onLogout }) {
         if (!q) return true;
         return c.name.toLowerCase().includes(q) || (c.phone || '').includes(q) || (c.last_message || '').toLowerCase().includes(q);
       })
-      // Flick AI Agent always first, then the newest conversation
-      .sort((a, b) => b.isAgent - a.isAgent || (b.time ? toMs(b.time) : 0) - (a.time ? toMs(a.time) : 0));
+      // Newest conversation first
+      .sort((a, b) => (b.time ? toMs(b.time) : 0) - (a.time ? toMs(a.time) : 0));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chats, query, filter, inArchive, showPin, partner?.id]);
 
@@ -259,14 +254,14 @@ export default function Sidebar({ onPanel, onLogout }) {
         ) : (
           <>
             {inArchive && <p className="archive-note">These chats stay archived when new messages arrive.</p>}
-            {/* Flick AI Agent stays first; the Archived row comes right after it */}
+            {/* The Archived row comes first */}
             {list.map((c, i) => (
               <Fragment key={c.id}>
-                {i === (list[0]?.isAgent ? 1 : 0) && archivedRow}
+                {i === 0 && archivedRow}
                 <ChatRow chat={c} active={c.id === activeId} typers={typing[c.id]} />
               </Fragment>
             ))}
-            {list.length <= (list[0]?.isAgent ? 1 : 0) && archivedRow}
+            {list.length === 0 && archivedRow}
           </>
         )}
       </div>

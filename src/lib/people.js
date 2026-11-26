@@ -22,7 +22,7 @@ export const usePeople = () => {
     const byId = new Map();
     (contacts || []).forEach((c) => byId.set(c.id, { ...c, phone: c.phone_number }));
     Object.values(chats)
-      .filter((c) => !c.is_group && !c.isAgent)
+      .filter((c) => !c.is_group)
       .forEach((c) => byId.set(c.id, { ...byId.get(c.id), ...c }));
     return [...byId.values()];
   }, [chats, contacts]);

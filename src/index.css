@@ -1077,11 +1077,6 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.agent-spark {
-  color: var(--brand-strong);
-  margin-left: 4px;
-  vertical-align: -1px;
-}
 .chat-row-time {
   font-size: 12px;
   color: var(--muted);

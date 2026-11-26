@@ -5,7 +5,10 @@
  */
 import { useSyncExternalStore } from 'react';
 import * as api from './api';
-import { AGENT_ID, HISTORY_PAGE, MAX_MESSAGE_CHARS } from './config';
+import { HISTORY_PAGE, MAX_MESSAGE_CHARS } from './config';
+
+// The AI agent chat of older servers: Flick no longer has an AI agent, so it is never listed
+const OLD_AGENT_ID = 'ai_assistant';
 import { isGroupId, previewText, sameUser, toMs } from './format';
 import { LOVE_SIGNALS, isLoveReaction, loveBurst, loveSignalMetadata, loveSignalOf, loveSignalText, reactionParticles } from './love';
 import { notifyMessage, notifyReaction, playLoveSound, updateTitle } from './notify';
@@ -103,7 +106,6 @@ function normChat(item, prev = {}) {
     online: prev.online ?? !!item.online,
     // The server's unread count covers messages up to this time (see bumpChat)
     syncedTime: item.time || prev.syncedTime || '',
-    isAgent: String(item.id) === AGENT_ID,
   };
 }
 
@@ -283,6 +285,7 @@ export function sync(full = false) {
         }
         for (const row of [...(page.created || []), ...(page.updated || [])]) {
           const id = String(row.id);
+          if (id === OLD_AGENT_ID) continue;
           const prev = s.chats[id] || {};
           const next = normChat(row, prev);
           // Open and on screen: it's being read right now
@@ -318,7 +321,7 @@ export function openChat(chatId) {
   else refreshLatest(chatId);
   markChatRead(chatId);
   if (isGroupId(chatId)) loadGroupInfo(chatId);
-  else if (chatId !== AGENT_ID) socket.queryPresence(chatId);
+  else socket.queryPresence(chatId);
 }
 
 /** The chat with this person, added to the list (without opening it) when it isn't there yet. */
@@ -451,7 +454,7 @@ export function markChatRead(chatId) {
   const box = state.messages[chatId];
   const hasUnseen = chat.unread > 0 || box?.list.some((m) => !m.mine && m.status !== 'read' && m.kind !== 'system');
   if (!hasUnseen) return;
-  if (chatId !== AGENT_ID) socket.markRead(chatId);
+  socket.markRead(chatId);
   patchChat(chatId, { unread: 0 });
   updateMessages(chatId, (list) => list.map((m) => (!m.mine && m.status !== 'read' ? { ...m, status: 'read' } : m)));
   updateTitle(totalUnread());
@@ -681,7 +684,7 @@ function removeLocal(chatId, id) {
 
 /** Moves chats in or out of Archived at once; puts them back if the server refuses. */
 export async function setArchived(ids, archived, { undo = true } = {}) {
-  const list = ids.filter((id) => state.chats[id] && !state.chats[id].isAgent);
+  const list = ids.filter((id) => state.chats[id]);
   if (!list.length) return;
   const apply = (value, which) =>
     setState((s) => {

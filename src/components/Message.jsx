@@ -9,7 +9,7 @@ import { Avatar, Menu, Modal } from './ui';
 
 /* ---------------- text: links + light formatting ---------------- */
 
-// *bold*  _italic_  ~strike~  `code`  (WhatsApp style; also **bold** from the AI agent).
+// *bold*  _italic_  ~strike~  `code`  (WhatsApp style; also **bold**).
 // Markers only count at word edges, so snake_case names and a*b*c stay as typed.
 const FORMAT = /(?<![\p{L}\p{N}_*~`])(\*\*[^*\n]+\*\*|\*[^*\s][^*\n]*?\*|_[^_\s][^_\n]*?_|~[^~\s][^~\n]*?~|`[^`\n]+`)(?![\p{L}\p{N}_*~`])/gu;
 
